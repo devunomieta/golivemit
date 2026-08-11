@@ -1,0 +1,516 @@
+Miva Project
+2025/2026 Academic Session
+Third Semester Examination
+A Project Paper Submitted to MIVA Open University
+in Partial Fulfillment of the Requirements for the Award of a Master’s In information technology (MIT)
+By
+Akpo Mamuzou Raphael
+Email:  HYPERLINK "mailto:m.akpo3855@miva.edu.ng" m.akpo3855@miva.edu.ng Student ID: 301803855
+Matriculation Number: 2025/A/MIT/0214
+Title:
+Design and Development of a Risk-Based Go-Live Readiness Decision Support System (DSS) for Enterprise Software Delivery
+May 2026
+TABLE OF CONTENTS
+Chapter One: Introduction …………………………………………………………… 3
+Chapter Two: Literature Review and Technology Context ………………………….. 10
+Chapter Three: Methodology and System Design …………………………………… 20
+CHAPTER ONE: INTRODUCTION
+1.1 Background to the Project
+Enterprise software projects now support many of the activities that organisations depend on every day, including customer service, payment processing, regulatory reporting, inventory management, employee productivity, public service delivery and executive decision-making. When a new system, major enhancement, integration change or data migration is pushed into production, the effect is no longer limited to the technical team. A poor release can affect customers, staff, management decisions, revenue collection, compliance obligations and the organisation’s reputation. For this reason, the decision to go live has become one of the most important governance decisions in software delivery.
+In a mature delivery environment, go-live should not be treated as a ceremony at the end of development. It should be the result of clear evidence that the system is functionally acceptable, technically stable, operationally supportable, secure enough for its risk level, and ready for the users who will depend on it. In practice, however, many teams still make go-live decisions through long meetings, scattered spreadsheets, subjective opinions, defect lists copied from different tools, and pressure from project timelines. This makes it difficult for decision makers to see the true readiness position of the project at a single point in time.
+The problem is more visible in enterprise projects because such projects usually involve several stakeholder groups. A typical release may involve business owners, project managers, product owners, developers, quality assurance teams, information security teams, database administrators, DevOps engineers, support teams, vendors, regulatory representatives and executive sponsors. Each group may have a different view of what readiness means. For example, a business team may focus on whether the core business process works, while a DevOps team may focus on deployment stability and rollback options. A security team may focus on vulnerabilities, while a support team may focus on user training, service desk scripts and post-go-live monitoring. Unless these readiness views are combined in a structured way, the organisation may either delay a release unnecessarily or release a system with serious unresolved risks.
+Software engineering literature has long recognised risk as a major factor in project success. Boehm (1991) positioned software risk management as a discipline that helps teams identify, analyse, prioritise and control uncertainties before they turn into project failures. In the same way, NIST (2012) presents risk assessment as a process for providing leaders with information that supports appropriate decisions. In software go-live governance, this means that a release decision should not only ask whether tasks have been completed; it should also ask what risk remains, how severe the risk is, who has accepted it, and whether there is evidence to support that acceptance.
+Quality is also central to readiness. ISO/IEC 25010:2023 provides a software product quality model that can be used to evaluate product characteristics such as functional suitability, performance efficiency, compatibility, usability, reliability, security, maintainability and portability. Although the full standard is broader than what this MIT 8335 project may implement, its quality characteristics are useful because they show that readiness is not the same as functional testing alone. A system may pass many business test cases and still be unready because performance is poor, security is weak, deployment is unstable, data migration is incomplete, users are not trained, or support responsibilities are unclear.
+This project therefore proposes the design and development of a Risk-Based Go-Live Readiness Decision Support System for Enterprise Software Delivery. The proposed system will help delivery teams capture readiness evidence, assess project risks across important readiness domains, calculate a weighted readiness score, apply decision rules, and produce a clear go-live recommendation. The expected recommendation will be presented as Go, Conditional Go, or No-Go, depending on the readiness score, risk severity and gate conditions. The intention is not to replace professional judgment. Rather, the system is intended to make professional judgment more evidence-based, traceable and consistent.
+The project is also relevant to the Nigerian enterprise environment, where organisations in banking, telecommunications, government, education, logistics, health and technology increasingly rely on digital systems. As digital adoption grows, software releases need stronger governance because system failures can affect citizens, customers and business continuity. The Nigeria Data Protection Act 2023 also strengthens the need for responsible handling of personal data and accountable technology operations. A go-live readiness system that includes security, privacy, evidence and approval traceability can therefore support better professional IT practice in such an environment.
+1.2 Statement of the Problem
+The main problem addressed by this project is the absence of a structured, risk-based and evidence-driven system for supporting go-live readiness decisions in enterprise software delivery. In many projects, readiness information is not stored in one place. Test results may be in a test management tool, defects may be in a tracking system, deployment information may be in release notes, business acceptance may be in emails, and risk acceptance may be recorded only in meeting discussions. This fragmented approach makes it difficult for management to understand the real risk position of a release.
+A second problem is that many go-live checklists are treated as simple yes-or-no documents. While checklists are useful, they often do not show the relative importance of each readiness item. For instance, unresolved critical security vulnerabilities should not carry the same weight as a minor documentation gap. Also, some conditions should automatically prevent go-live, such as the absence of rollback plans, open critical defects, unresolved data migration failure, or lack of business sign-off. Where these differences are not built into the decision process, the final decision may become too subjective.
+A third problem is poor traceability. In some delivery environments, it is difficult to confirm who approved go-live, what evidence was reviewed, what risks were accepted, and what conditions were attached to the approval. This can create problems after production incidents because the organisation may not have a reliable audit trail of the decision. It can also weaken learning across projects because lessons from one release are not properly captured for future releases.
+The final problem is that most general project management, testing and DevOps tools do not focus specifically on risk-based go-live readiness. They may support tasks, defects, pipelines, test cases or dashboards, but they do not always combine readiness criteria, risk scoring, approval workflow, recommendation rules and release decision reports in one practical system. This creates a gap for a focused decision support tool that can help project teams assess readiness in a more consistent and professional way.
+1.3 Aim of the Project
+The aim of this project is to design and develop a risk-based go-live readiness decision support system that helps enterprise software delivery teams assess release readiness, quantify residual risks, and generate evidence-based go-live recommendations.
+1.4 Objectives of the Project
+The specific objectives of the project are to:
+Identify and analyse key go-live readiness factors that affect enterprise software release decisions, including functional quality, defect status, security, performance, data readiness, deployment readiness, business acceptance and operational support.
+Develop a risk-based scoring model that assigns weights, likelihood, impact, severity and decision thresholds to readiness criteria in order to produce a measurable readiness position.
+Design the functional and non-functional requirements of a web-based decision support system for capturing readiness evidence, risks, approvals, recommendations and audit trails.
+Design the proposed system architecture, process flow, database model and user interaction model for the go-live readiness assessment platform.
+Develop and evaluate a working prototype of the system to confirm that it can support consistent go-live decision-making for enterprise software projects.
+1.5 Project Questions
+Although this is an applied professional project rather than a purely theoretical thesis, the following questions guide the work:
+What readiness factors should be considered before an enterprise software system is approved for production release?
+How can risk scoring be used to convert scattered readiness information into a clear decision position?
+What system features are required to support evidence-based go-live assessment, recommendation and approval?
+How can the proposed system improve traceability, accountability and consistency in software release governance?
+1.6 Scope of the Project
+The project focuses on the design and development of a web-based decision support system for assessing go-live readiness in enterprise software delivery. The system will allow authorised users to create a project or release record, select applicable readiness criteria, upload or reference supporting evidence, record risk ratings, calculate readiness scores, apply decision thresholds, generate recommendations and maintain an approval trail.
+The main readiness domains to be covered are functional readiness, test completion, defect readiness, security readiness, performance readiness, data migration readiness, deployment readiness, operational support readiness, user readiness, compliance readiness and rollback readiness. The scoring model will allow each domain to be weighted based on importance. The prototype will include dashboard views and basic reporting so that project teams can see the readiness position without depending only on manual status meetings.
+The project will not cover automatic deployment into production, real-time integration with all enterprise tools, artificial intelligence-based prediction of production incidents, full regulatory certification, or organisation-wide implementation across multiple companies or agencies. Also, the prototype will use sample project data for demonstration and evaluation. Actual production data from organisations will only be used where it is properly anonymised and permitted.
+1.7 Significance of the Project
+1.7.1 Significance to Industry and Organisations
+The proposed system is significant to organisations because it addresses a practical governance problem in software delivery. Many organisations invest heavily in software projects, but the final release decision may still depend on fragmented evidence and subjective judgment. A structured readiness system can help management see whether the release is safe enough, what risks remain, and what conditions must be satisfied before production deployment.
+For project managers, the system can improve visibility and escalation. Instead of waiting for separate updates from QA, DevOps, business users and support teams, the project manager can view readiness indicators from one dashboard. For quality assurance teams, it provides a clearer way to link testing outcomes to release decisions. For executives and sponsors, it provides a summary that is easier to interpret than raw defect lists or technical deployment notes.
+1.7.2 Significance to the Nigerian Context
+In Nigeria, enterprise systems are increasingly used in banking, telecommunications, fintech, public-sector platforms, education, healthcare and logistics. Failures in these systems may affect service availability, customer trust and public confidence in digital services. A risk-based readiness approach can help Nigerian organisations improve production release discipline, especially where projects involve external vendors, multiple departments or agencies and strict timelines.
+The project also supports the growing importance of data protection and accountability in Nigeria. The Nigeria Data Protection Act 2023 established a stronger legal framework for the protection of personal information and the Nigeria Data Protection Commission. A system that records readiness evidence, security checks and approval decisions can help organisations demonstrate more responsible technology governance.
+1.7.3 Significance to Professional IT Practice
+The project contributes to professional IT practice by combining ideas from software quality, risk management, release management, requirements engineering and decision support systems. It provides a practical example of how a project like this can produce a solution-driven IT artefact rather than only discussing a problem theoretically. It also encourages a more disciplined go-live culture where readiness is measured, risks are visible, and approvals are traceable.
+The project can serve as a model for building lightweight governance tools that are useful in real delivery environments. It shows how software engineering standards and frameworks can be translated into a working system with forms, rules, workflows, dashboards and reports.
+1.8 Operational Definition of Key Terms
+Term
+Meaning in this Project
+Go-live
+The point at which a software system, feature, release or major change is deployed into the production environment for actual business use.
+Go-live readiness
+The level of preparedness of a software release based on functional quality, technical stability, operational support, security, business acceptance and other release criteria.
+Risk
+An uncertain condition or issue that may negatively affect the success of a production release if it is not controlled or accepted by the right stakeholders.
+Decision support system
+An information system that helps users make better decisions by organising relevant data, applying models or rules, and presenting useful outputs.
+Residual risk
+The risk that remains after controls, testing, fixes and mitigation actions have been applied.
+Conditional Go
+A go-live recommendation that allows deployment only if clearly stated conditions, approvals or mitigations are completed.
+No-Go
+A recommendation that the release should not proceed because the risk level or missing readiness evidence is unacceptable.
+CHAPTER TWO: LITERATURE REVIEW AND TECHNOLOGY CONTEXT
+2.1 Introduction
+This chapter reviews the concepts, practices and technologies that support the design of a Risk-Based Go-Live Readiness Decision Support System. The review is deliberately focused on materials that are useful for building the proposed system. Since the project is applied and professional in nature, the literature review does not aim to cover every theory in software engineering. Instead, it concentrates on concepts that directly inform the proposed solution: enterprise software delivery, go-live readiness, software risk management, decision support systems, software quality, requirements engineering, DevOps and release governance, security, data protection and web-based system design.
+This chapter also reviews existing practices and tools that are commonly used in release decision-making. These include manual checklists, project management tools, test management systems, DevOps pipelines and governance platforms. The review shows that although these tools are useful, they often do not provide a single focused system or reliable source of truth for risk-based go-live readiness scoring and decision recommendation. This gap provides the basis for the proposed project.
+2.2 Conceptual Review
+2.2.1 Enterprise Software Delivery
+Enterprise software delivery refers to the planning, development, testing, deployment and support of software systems used to run important organisational processes. Unlike small personal applications, enterprise software usually has many users, integrations, environments, data dependencies and approval points. A release may depend on requirements from business units, code from development teams, test evidence from QA, infrastructure readiness from operations, and sign-off from management.
+ISO/IEC/IEEE 12207:2017 provides a common framework for software life cycle processes and can be applied to activities such as acquisition, supply, development, operation, maintenance and disposal of software systems. The relevance of this standard to the present project is that go-live readiness should be treated as part of a wider life cycle process, not as a one-time decision made after coding. A release is safer when readiness evidence is collected across the life cycle, especially from requirements, design, testing, deployment and operations.
+2.2.2 Go-Live Readiness
+Go-live readiness is the extent to which a system, team and organisation are prepared for production deployment. It includes technical readiness, business readiness and operational readiness. Technical readiness focuses on whether the software works as expected, whether defects are controlled, whether performance is acceptable, whether deployment scripts are tested, and whether rollback plans exist. Business readiness focuses on user acceptance, process alignment, training, communication and stakeholder sign-off. Operational readiness focuses on monitoring, support ownership, incident response, service desk preparation and post-go-live hypercare.
+A common weakness in software projects is the tendency to reduce readiness to test pass rate alone. Test pass rate is useful, but it does not tell the full story. A system may have a high test pass rate while still carrying unacceptable risks, such as open critical defects, unresolved security issues, poor data migration quality, missing user training or weak rollback planning. Therefore, go-live readiness must be viewed as a multi-dimensional assessment rather than a single testing outcome.
+2.2.3 Software Risk Management
+Software risk management is concerned with identifying, analysing, prioritising and controlling events that may negatively affect a software project or product. Boehm (1991) describes risk management as a proactive approach to dealing with software uncertainty before it becomes a serious problem. This idea is important for go-live readiness because production release is one of the points where unresolved risks become visible to real users.
+NIST SP 800-30 Rev. 1 also explains that risk assessments provide decision makers with information needed to determine appropriate responses to risk. In the context of this project, this means that a readiness platform should not only collect status updates. It should help stakeholders rate risk likelihood, risk impact and overall severity. It should also support management in deciding whether to accept, mitigate, defer or reject a release risk.
+Risk-based release decisions are useful because they recognise that not all issues are equal. A spelling mistake on an internal label, for example, is not equivalent to a failed payment integration or an unauthorised access vulnerability. A good readiness system should therefore apply weights and gate rules so that serious risks cannot be hidden inside an average score.
+2.2.4 Decision Support Systems
+A decision support system is an information system that helps users make decisions by organising data, applying models or rules, and presenting results in a way that supports judgment. In this project, the decision support system will not make the final management decision by itself. Instead, it will provide a structured readiness score, risk summary, recommendation and evidence trail so that authorised stakeholders can make a more informed go-live decision.
+A simple decision support system normally has three major elements: a data component, a model component and a user interface component. The data component stores projects, releases, criteria, responses, risks and approvals. The model component applies scoring rules, weightings and decision thresholds. The user interface component allows users to enter assessments, view dashboards and generate reports. The proposed system follows this general structure.
+2.2.5 Software Quality and Readiness
+Software quality refers to the degree to which a software product satisfies stated and implied needs. ISO/IEC 25010:2023 defines a product quality model with nine characteristics for ICT and software products. For this project, the most relevant quality areas include functional suitability, performance efficiency, usability, reliability, security, maintainability and compatibility. These quality areas help to shape the readiness criteria in the proposed system.
+The implication is that go-live readiness should not be defined only by whether development tasks are completed. It should be defined by whether the system is suitable for real use. Functional suitability asks whether the system does what it is required to do. Performance efficiency asks whether it can respond within acceptable limits. Reliability asks whether it can operate consistently. Security asks whether it protects data and functions from unauthorised access. Maintainability asks whether the system can be supported after go-live. Each of these quality characteristics can be converted into readiness criteria.
+2.2.6 Requirements Engineering and Traceability
+Requirements engineering is the process of discovering, analysing, specifying, validating and managing what a system should do and the qualities it should have. ISO/IEC/IEEE 29148:2018 provides guidance for requirements and requirements-related processes across the life cycle. The proposed system depends on good requirements because readiness criteria must be clear, measurable and traceable to the decision that will be made.
+For this project, requirements traceability is important in two ways. First, the readiness criteria should be traceable to common go-live concerns such as defects, security, performance and deployment. Second, each assessment should be traceable to evidence, approval and decision outcome. This supports accountability because stakeholders can later review why a release was approved, conditionally approved or stopped.
+2.2.7 DevOps and Release Governance
+DevOps encourages closer collaboration between development and operations, with emphasis on automation, feedback, reliability and faster delivery. The DORA research tradition has popularised delivery performance measures such as deployment frequency, lead time for changes, change failure rate and time to restore service. These measures show that speed alone is not enough; software delivery must also consider stability and recovery. A risk-based go-live system supports this thinking by making release risk visible before production deployment.
+However, DevOps automation does not remove the need for governance. In enterprise environments, especially where systems affect customers, compliance, revenue or public services, some releases still need formal readiness review. A pipeline may show that a build passed automated tests, but management may still need to confirm business acceptance, security review, rollback readiness and support preparedness. The proposed system is therefore positioned as a governance layer that can work beside existing development and DevOps tools.
+2.2.8 Security, Privacy and Compliance Readiness
+Security readiness is a major part of go-live readiness because production systems often process sensitive user, business or organisational data. NIST SP 800-218 presents the Secure Software Development Framework as a set of recommended practices for reducing software vulnerabilities. OWASP ASVS also provides requirements that can be used for verifying web application security controls. These materials support the inclusion of security checks in the proposed system, such as authentication, authorisation, input validation, secure configuration, logging and evidence of vulnerability review.
+Privacy and compliance are also relevant, particularly in the Nigerian environment. The Nigeria Data Protection Act 2023 provides a legal framework for protecting personal information and establishes the Nigeria Data Protection Commission. This project does not aim to provide legal compliance certification, but it recognises that go-live decisions should include data protection considerations where personal or sensitive data is involved. The system should therefore support privacy-related readiness checks, such as whether personal data use has been reviewed, whether access controls are defined, and whether unnecessary sensitive data is avoided in evidence uploads.
+2.3 Review of Existing Systems and Practices
+2.3.1 Manual Go-Live Checklists
+Manual go-live checklists are common because they are easy to create and can be adapted quickly. A checklist may include items such as test completion, business sign-off, deployment plan, backup plan, support readiness and communication. The advantage of this approach is simplicity. The disadvantage is that a checklist often treats all items as equal and may not calculate overall release risk. It may also be stored as a spreadsheet or document without proper audit trail, workflow or dashboard visibility.
+In some organisations, manual checklists become compliance documents rather than decision tools. Teams may tick items quickly to meet a deadline without attaching evidence or explaining residual risks. When this happens, the checklist creates a false sense of readiness. The proposed system improves on this by requiring structured criteria, evidence, scoring and approval traceability.
+2.3.2 Project Management and Issue Tracking Tools
+Project management and issue tracking tools such as Jira, Azure DevOps Boards, Trello and similar platforms help teams manage tasks, user stories, defects and workflow. They are useful during software delivery, but they are not always designed specifically for go-live readiness decisions. A defect dashboard can show how many defects are open, but it may not combine this with deployment readiness, business sign-off, training readiness and risk acceptance.
+Another limitation is that these tools may require heavy configuration before they can represent readiness scoring. Organisations may create custom fields and dashboards, but the result can become difficult to maintain. A focused readiness decision support system can be simpler for teams that need a clear go/no-go governance process.
+2.3.3 Test Management Tools
+Test management tools support test case design, execution tracking, defect linking and reporting. They are very useful for quality assurance activities. However, testing is only one part of go-live readiness. A test management tool may show whether test cases passed, failed or were blocked, but it may not capture whether users are trained, whether monitoring dashboards are ready, whether the rollback plan was tested, or whether the business owner has accepted a known risk.
+The proposed system does not replace test management tools. Instead, it can use testing outputs as one input into a wider readiness assessment. This is important because release decisions should be based on the complete risk picture, not only the testing picture.
+2.3.4 DevOps and CI/CD Tools
+CI/CD tools help teams build, test and deploy software more frequently and reliably. They can automate unit tests, integration tests, code quality checks, security scans and deployment scripts. These tools are important in modern software delivery, but their outputs are often technical. A successful pipeline does not automatically mean that the business is ready, support is ready, users have been trained, data migration is clean, or executives have accepted residual risks.
+For this reason, the proposed system is not a CI/CD replacement. It is a decision support layer that can sit above the technical delivery pipeline. It brings together technical and non-technical readiness evidence in a form that managers and delivery teams can interpret.
+2.3.5 Governance, Risk and Compliance Platforms
+Governance, risk and compliance platforms support enterprise risk registers, controls, audits and compliance activities. They are useful for broader organisational risk management. However, many of them are too broad or too heavy for day-to-day software release decisions. A software delivery team may need a more focused, lightweight tool that speaks the language of releases, defects, test completion, deployment readiness and go-live recommendations.
+The proposed system takes useful ideas from risk and governance platforms, such as scoring, approval, evidence and audit trail, but applies them specifically to software go-live readiness.
+2.4 Comparative Analysis of Existing Practices
+Existing Practice or Tool
+Strength
+Limitation for Go-Live Readiness
+How the Proposed System Responds
+Manual checklist
+Simple and easy to prepare
+Limited scoring, weak audit trail and often treats all items equally
+Adds weighted scoring, evidence capture and approval history
+Project management tool
+Good for tasks, user stories and workflow
+Does not always combine all readiness domains into a release decision
+Provides a release-specific readiness dashboard and recommendation
+Test management tool
+Good for test execution and defect reporting
+Focuses mainly on testing and may miss business or operational readiness
+Uses test results as one input into wider readiness assessment
+CI/CD pipeline
+Automates build, test and deployment steps
+Technical success does not always mean business readiness
+Combines technical outputs with business, support and risk evidence
+GRC platform
+Strong for enterprise risk and control management
+May be too broad or complex for software release teams
+Provides a lightweight system focused on go-live risk
+2.5 Review of Relevant Technologies and Frameworks
+2.5.1 Web-Based Application Architecture
+A web-based architecture is suitable for this project because go-live readiness involves several stakeholders who may not be in the same physical location. A browser-based system allows project managers, QA teams, DevOps teams, business owners and approvers to access the readiness record through a common interface. The system can be built using a client-side interface, a server-side API and a relational database.
+The proposed architecture separates the presentation layer, application logic layer and data layer. This separation improves maintainability because changes to the user interface do not always require changes to the database, and changes to scoring logic can be managed at the application layer. The approach also supports future integration with other tools if the project is extended later.
+2.5.2 Relational Database Management
+A relational database is appropriate because the system will store structured records such as users, roles, projects, releases, criteria, risk ratings, approvals and audit logs. Tables can be related through primary keys and foreign keys. For example, one release can have many readiness assessments, one assessment can have many responses, and each response can be linked to a readiness criterion. PostgreSQL is a suitable option because it is stable, widely used and supports strong relational modelling.
+2.5.3 Role-Based Access Control
+Role-based access control is important because not every user should perform every action. A QA analyst may enter assessment evidence, a project manager may submit a release for approval, an approver may accept or reject a recommendation, and an administrator may manage criteria and users. Role separation supports accountability and reduces the risk of unauthorised changes to readiness decisions.
+2.5.4 Dashboard and Reporting Technologies
+Dashboards help users understand readiness status quickly. In this project, dashboards will show readiness scores, risk levels, domain performance, open blockers, approval status and decision recommendation. Basic charts can be used to present domain scores and risk distribution. Reports can be exported for management review, project closure records and audit purposes.
+2.5.5 Audit Logging
+Audit logging is necessary because go-live decisions may be questioned after production incidents. The system should record important actions such as assessment creation, criteria updates, evidence submission, score calculation, approval, rejection and recommendation changes. An audit trail gives the organisation a record of who did what, when it was done and what decision was made.
+2.6 Gap Analysis
+The review shows a clear gap between general software delivery tools and the specific need for risk-based go-live readiness decision support. The proposed system addresses this gap by combining readiness criteria, scoring, evidence, approval workflow and recommendation output in one focused platform.
+Observed Gap
+Effect on Software Delivery
+Proposed Response
+Readiness evidence is fragmented across tools, emails and meetings
+Decision makers may not see the complete release risk picture
+Centralise release readiness records, evidence and approvals
+Checklists often use simple tick boxes
+Critical risks may be hidden behind completed minor items
+Introduce weighted criteria, likelihood, impact and gate rules
+Testing is treated as the main measure of readiness
+Business, operational, security and rollback readiness may be missed
+Assess readiness across multiple domains
+Approval decisions are not always traceable
+Post-incident accountability and learning become difficult
+Maintain audit logs and decision history
+Existing tools are either too broad or too technical
+Teams lack a simple release-specific governance tool
+Build a focused web-based decision support prototype
+2.7 Conceptual Framework for the Proposed System
+The conceptual framework for the proposed system is based on the relationship between readiness inputs, risk scoring and decision outputs. Readiness inputs include test results, defect status, security checks, performance evidence, data migration status, deployment plans, business sign-off and operational support preparation. These inputs are converted into criteria responses and risk ratings. The scoring model then calculates domain scores and overall readiness. Finally, the system applies decision thresholds and gate rules to recommend Go, Conditional Go or No-Go.
+The framework assumes that a reliable go-live recommendation should be supported by both numeric scoring and professional judgement. Numeric scoring creates consistency, but professional judgement is still needed because project context matters. For example, a medium-risk internal release may be acceptable if it has a strong rollback plan, while the same risk may be unacceptable for a public-facing payment system. Therefore, the system allows weighting and gate conditions so that the organisation can adjust the model to the nature of the release.
+CHAPTER THREE: METHODOLOGY AND SYSTEM DESIGN
+3.1 Introduction
+This chapter presents the methodology and system design for the proposed Risk-Based Go-Live Readiness Decision Support System. It explains the approach adopted for the project, the reason for choosing the approach, the system requirements, the proposed scoring model, the system architecture, workflow, database design, user roles, tools and feasibility considerations. This chapter translates the problem identified in Chapter One and the literature reviewed in Chapter Two into a practical design that can guide system development.
+The project is solution-driven. The expected output is not only a written report but also a working software prototype that demonstrates how go-live readiness can be assessed in a structured way. Therefore, the methodology combines requirements analysis, iterative design, prototype development, testing and evaluation.
+3.2 Project Methodology
+The methodology selected for this project is a hybrid of Agile software development and Design Science Research. Agile is suitable because the proposed system can be developed in small increments, reviewed and improved based on feedback. The Scrum Guide describes Scrum as an approach where a team works in sprints to create useful increments and inspect progress regularly. Although this project may not use a full industrial Scrum team, the same principle of incremental development is useful for building the prototype.
+Design Science Research is also relevant because the project aims to create an IT artefact that solves a practical problem. The artefact in this case is the go-live readiness decision support system. The project begins with problem identification, then defines objectives, designs the system, develops a prototype and evaluates whether the prototype addresses the problem.
+3.3 Justification of the Methodology
+A purely waterfall approach may be too rigid for this project because the scoring model and interface may need refinement as the design becomes clearer. At the same time, a completely informal agile approach may not provide enough documentation for academic assessment. A hybrid approach is therefore more suitable. It allows the project to keep the structure expected in an academic report while still developing the system iteratively.
+The methodology is justified for four main reasons. First, go-live readiness is a practical organisational problem, so the project must produce a practical artefact. Second, the system requirements can be improved through feedback from software delivery stakeholders. Third, the scoring model may require adjustment after sample scenarios are tested. Fourth, the project must show evidence of analysis, design, implementation and evaluation, which is supported by the chosen approach.
+3.4 Project Development Phases
+Phase
+Activities
+Expected Output
+Phase 1: Problem Understanding
+Review common go-live readiness challenges, define problem, clarify project aim and objectives
+Problem statement, aim, objectives and scope
+Phase 2: Literature and Technology Review
+Review risk management, software quality, DSS, DevOps, security and existing tools
+Technology context and gap analysis
+Phase 3: Requirements Analysis
+Identify users, functional requirements, non-functional requirements and data needs
+Requirements specification and use cases
+Phase 4: System Design
+Design architecture, workflow, scoring model, database and interface structure
+System architecture, process flow and data model
+Phase 5: Prototype Development
+Develop modules for users, projects, criteria, assessment, scoring, dashboard, reports and approvals
+Working web application prototype
+Phase 6: Testing and Evaluation
+Perform functional testing, usability review, security checks and objective evaluation
+Test results and evaluation report
+Phase 7: Documentation
+Prepare final project report, user guide and presentation
+Complete project documentation
+3.5 Requirements Analysis
+3.5.1 Stakeholders and User Roles
+The proposed system will support different users involved in software release decisions. Their responsibilities are summarised below.
+User Role
+Main Responsibility in the System
+System Administrator
+Creates users, manages roles, configures readiness domains, criteria, weights and decision thresholds.
+Project Manager
+Creates project and release records, monitors readiness progress, submits release for approval and views management reports.
+QA/Test Lead
+Enters test completion status, defect summary, test evidence and functional readiness information.
+DevOps/Release Engineer
+Provides deployment plan, environment readiness, rollback plan, build status and deployment evidence.
+Security/Compliance Reviewer
+Records security checks, vulnerability status, privacy considerations and compliance readiness.
+Business Owner/Product Owner
+Confirms business acceptance, user readiness, training and business risk acceptance.
+Approver/Steering Committee Member
+Reviews recommendation and evidence, then approves Go, Conditional Go or No-Go decision.
+3.5.2 Functional Requirements
+Functional requirements describe the actions the system must perform. The key functional requirements are listed below.
+Code
+Functional Requirement
+Priority
+FR01
+The system shall allow authorised users to log in securely and access functions based on assigned roles.
+High
+FR02
+The system shall allow an administrator to create, edit and deactivate user accounts and roles.
+High
+FR03
+The system shall allow project managers to create project and release records.
+High
+FR04
+The system shall allow administrators to configure readiness domains, criteria, weights and gate rules.
+High
+FR05
+The system shall allow users to complete readiness assessments for selected releases.
+High
+FR06
+The system shall allow users to attach or reference evidence for readiness criteria.
+Medium
+FR07
+The system shall calculate domain-level and overall readiness scores using the configured risk model.
+High
+FR08
+The system shall apply decision thresholds and gate rules to generate Go, Conditional Go or No-Go recommendation.
+High
+FR09
+The system shall display readiness dashboards showing scores, risk levels, blockers and approval status.
+High
+FR10
+The system shall allow approvers to approve, reject or request further action on a release readiness assessment.
+High
+FR11
+The system shall record all major user actions in an audit log.
+High
+FR12
+The system shall generate a go-live readiness report for management review.
+Medium
+FR13
+The system shall allow conditional approvals to include specific conditions and owners.
+Medium
+FR14
+The system shall allow users to view historical release decisions for learning and comparison.
+Medium
+FR15
+The system shall notify relevant users when an assessment is submitted, approved, rejected or returned for action.
+Low/Medium
+3.5.3 Non-Functional Requirements
+Non-functional requirements describe the quality attributes expected from the system. The requirements are aligned with common software quality considerations.
+Quality Attribute
+Requirement
+Usability
+The system interface should be simple enough for project stakeholders who are not deeply technical to complete assessments and interpret dashboard results.
+Security
+The system should enforce authentication, role-based access control, input validation and protection of sensitive assessment evidence.
+Reliability
+The system should store assessment records accurately and preserve decision history without unauthorised alteration.
+Performance
+Dashboard and assessment pages should load within acceptable time for normal project data volumes.
+Maintainability
+The scoring criteria and thresholds should be configurable so that changes do not require major code modifications.
+Auditability
+The system should record important actions such as assessment submission, scoring, approval and rejection.
+Scalability
+The design should allow future extension to multiple departments, projects and integration points.
+Compatibility
+The web application should be accessible through common modern browsers.
+3.6 Risk-Based Go-Live Readiness Scoring Model
+The scoring model is the core decision logic of the proposed system. It converts readiness criteria into measurable risk and readiness values. The model is designed to be simple enough for this prototype while still being realistic enough for enterprise use. Each readiness criterion will be assigned a weight, likelihood score and impact score. The likelihood score estimates the chance that the issue will affect go-live. The impact score estimates the seriousness of the effect if it happens. The weight shows how important the criterion is within the release context.
+A basic risk score may be calculated as: Risk Score = Likelihood x Impact x Weight. Likelihood and impact can be rated on a scale of 1 to 5, where 1 is very low and 5 is very high. Weight can be configured based on the importance of the domain. The system will then calculate domain risk, overall risk and readiness percentage. A simple readiness calculation can be expressed as: Readiness Score = 100 - Normalised Risk Score. The system will also apply gate rules so that certain serious conditions can override the average score.
+For example, if a release has unresolved critical defects, no rollback plan, unapproved security vulnerabilities or failed data migration reconciliation, the system may recommend No-Go even if the average score appears acceptable. This is important because average scoring alone can sometimes hide high-severity risks. The model therefore combines quantitative scoring with rule-based governance.
+Readiness Domain
+Example Criteria
+Suggested Weight
+Functional Readiness
+Core user journeys passed, business rules validated, UAT sign-off obtained
+15%
+Defect Readiness
+No open critical defects, high defects have approved workarounds or fixes
+15%
+Security Readiness
+Access control reviewed, vulnerabilities assessed, sensitive data protected
+10%
+Performance Readiness
+Load or performance checks completed where applicable
+8%
+Data Readiness
+Migration completed, reconciliation performed, data quality exceptions reviewed
+10%
+Deployment Readiness
+Deployment plan, release notes, environment readiness and rollback plan confirmed
+12%
+Operational Readiness
+Monitoring, support ownership, incident process and hypercare plan confirmed
+10%
+User and Business Readiness
+Training, communication, process readiness and product owner sign-off confirmed
+10%
+Compliance Readiness
+Privacy, regulatory or internal governance checks completed
+5%
+Documentation Readiness
+User guide, support guide and known issues documented
+5%
+Readiness Score
+Risk Interpretation
+Recommended Decision
+80% - 100%
+Low residual risk with no blocking gate rule
+Go
+60% - 79%
+Moderate residual risk; release may proceed only if conditions are accepted
+Conditional Go
+Below 60%
+High residual risk or insufficient evidence
+No-Go
+Any score with blocking gate rule
+Critical readiness condition failed
+No-Go until blocker is resolved or formally escalated
+3.7 Proposed System Overview
+The proposed system will be a web-based application with modules for user management, project/release setup, readiness criteria configuration, assessment, risk scoring, dashboard, approval workflow, reporting and audit trail. The system will allow a project manager to create a release and assign the relevant readiness criteria. Different stakeholders will then provide responses and evidence for their areas. Once the assessment is submitted, the scoring engine will calculate readiness and recommend Go, Conditional Go or No-Go.
+The approver will review the recommendation, evidence and risk summary before making the final decision. If the decision is Conditional Go, the approver can record the conditions, responsible owners and expected completion date. If the decision is No-Go, the release can be returned for remediation and reassessment. All actions will be stored in the audit log.
+3.8 System Architecture
+The proposed architecture is divided into presentation, application, scoring and data layers. The presentation layer provides web forms, dashboards and reports. The application layer handles authentication, workflow and business logic. The scoring engine applies the readiness model. The data layer stores system records. The architecture is shown in Figure 3.1.
+Figure 3.1: Proposed System Architecture for the Risk-Based Go-Live Readiness DSS
+3.9 System Workflow
+The system workflow begins when a project manager creates a release record. The applicable readiness criteria are selected, and different stakeholders complete their sections. The scoring engine calculates readiness and risk scores. The system then applies gate rules and generates a recommendation. Approvers review the output and make the final decision. The workflow is shown in Figure 3.2.
+Figure 3.2: Proposed Go-Live Readiness Assessment Workflow
+3.10 Use Case Description
+The main use cases of the proposed system are summarised below.
+Use Case
+Primary Actor
+Description
+Manage Users and Roles
+Administrator
+Creates users, assigns roles and controls access privileges.
+Configure Readiness Criteria
+Administrator
+Defines readiness domains, criteria, weights, thresholds and gate rules.
+Create Release Assessment
+Project Manager
+Creates a release record and starts a readiness assessment.
+Submit Readiness Evidence
+QA, DevOps, Security, Business User
+Completes assigned criteria and provides evidence or comments.
+Calculate Readiness Score
+System
+Applies the risk model to generate domain and overall readiness scores.
+View Dashboard
+Project Stakeholders
+Displays readiness status, blockers, risk distribution and recommendation.
+Approve Go-Live Decision
+Approver
+Reviews evidence and approves Go, Conditional Go or No-Go.
+Generate Report
+Project Manager/Approver
+Produces a readiness report for governance and audit purposes.
+3.11 Database Design
+The database design will use relational tables. The following tables are proposed for the prototype.
+Table
+Purpose
+Key Fields
+users
+Stores user account information
+user_id, name, email, password_hash, role_id, status
+roles
+Stores user roles
+role_id, role_name, description
+projects
+Stores project details
+project_id, project_name, owner, department, description
+releases
+Stores release records
+release_id, project_id, release_name, release_date, status
+readiness_domains
+Stores readiness categories
+domain_id, domain_name, default_weight
+readiness_criteria
+Stores assessment criteria
+criterion_id, domain_id, criterion_text, weight, gate_rule_flag
+assessments
+Stores assessment header information
+assessment_id, release_id, created_by, status, overall_score, recommendation
+assessment_responses
+Stores responses to each criterion
+response_id, assessment_id, criterion_id, likelihood, impact, score, evidence_link, comment
+approvals
+Stores approval decisions
+approval_id, assessment_id, approver_id, decision, conditions, date
+audit_logs
+Stores system activity trail
+log_id, user_id, action, affected_record, timestamp
+attachments
+Stores evidence metadata
+attachment_id, assessment_id, file_name, file_path, uploaded_by
+3.12 Interface Design Overview
+The prototype will use simple screens that reflect the main tasks of the system. The interface will avoid unnecessary complexity because the target users include both technical and non-technical stakeholders.
+Screen
+Main Content
+Login Screen
+Email, password and access validation.
+Dashboard
+Readiness score, recommendation, open blockers, pending approvals and recent assessments.
+Project/Release Setup
+Project name, release name, release date, owner, description and applicable domains.
+Criteria Configuration
+Readiness domains, criteria, weights, thresholds and gate rule settings.
+Assessment Form
+Criteria questions, likelihood, impact, evidence upload/link and comments.
+Risk Summary
+Domain scores, high-risk items, blockers and residual risk explanation.
+Approval Screen
+Recommendation, evidence summary, approval action, conditions and decision notes.
+Reports Screen
+Exportable readiness report and historical release decisions.
+3.13 Tools and Technologies to be Used
+The following tools and technologies are proposed for the development of the system. The final selection may be adjusted during implementation depending on development constraints, but the chosen stack is realistic for this project scope.
+Area
+Proposed Tool/Technology
+Reason for Selection
+Frontend
+React.js, HTML, CSS and JavaScript
+Supports component-based user interfaces and interactive dashboards.
+Backend
+Node.js with Express.js
+Suitable for building REST APIs and handling application logic.
+Database
+PostgreSQL
+Reliable relational database for structured project, assessment and approval data.
+Authentication
+JSON Web Token and password hashing
+Supports secure login and session management.
+Charts
+Chart.js or similar JavaScript charting library
+Useful for readiness dashboard visualisation.
+Version Control
+Git and GitHub
+Supports source code management and project tracking.
+API Testing
+Postman or Insomnia
+Useful for testing backend endpoints during development.
+Documentation
+Microsoft Word and diagrams
+Required for report writing, user guide and system documentation.
+Deployment for Demo
+Local server or cloud demo environment
+Allows the prototype to be demonstrated during assessment.
+3.14 Security and Privacy Design Considerations
+Security will be considered from the design stage because the system may store sensitive project information, risk comments and release evidence. The prototype will include authentication, role-based access control, password hashing, input validation and audit logging. Users will only access actions permitted by their roles. For example, an ordinary assessment contributor should not be able to change scoring weights or approve a release.
+Privacy will also be considered. The prototype will avoid unnecessary collection of personal data. Where evidence files are uploaded, users will be advised to avoid including personal or sensitive data unless required for the project. In a production version, additional controls such as encryption at rest, file scanning, retention rules and privacy notices would be required.
+3.15 Feasibility Considerations
+3.15.1 Technical Feasibility
+The project is technically feasible because it can be implemented using widely available web development technologies. The required modules are achievable within the scope of this project. The scoring model is also feasible because it uses configurable numerical ratings and rule-based logic rather than complex machine learning.
+3.15.2 Operational Feasibility
+The system is operationally feasible because it addresses an existing need in software delivery teams. Project managers, QA leads, release engineers and business owners already participate in go-live review meetings. The proposed system simply provides a more structured way to capture and evaluate the information they already discuss.
+3.15.3 Economic Feasibility
+The project can be developed with open-source or low-cost tools such as React, Node.js, PostgreSQL and GitHub. This reduces development cost and makes the prototype affordable for academic purposes. If adopted in an organisation, the system may reduce the cost of failed releases by improving readiness visibility and risk control.
+3.15.4 Constraints and Assumptions
+The main constraint is that the prototype will not be integrated with every project management, testing or DevOps tool. Sample data may be used for demonstration. Another constraint is that the scoring model will need organisational calibration before real production use. The project assumes that stakeholders are willing to provide honest readiness responses and that the organisation defines who has authority to approve go-live decisions.
+3.16 Evaluation Plan
+The prototype will be evaluated against the project objectives. Functional testing will confirm that the main modules work as expected. Usability review will check whether users can complete assessments and understand dashboard results. The scoring model will be tested with sample release scenarios to confirm that it produces reasonable Go, Conditional Go and No-Go recommendations. Security checks will review authentication, role-based access and audit logging. The evaluation will be presented in a later Chapter.
+REFERENCES
+Bass, L., Clements, P., & Kazman, R. (2021). Software architecture in practice (4th ed.). Addison-Wesley.
+Boehm, B. W. (1991). Software risk management: Principles and practices. IEEE Software, 8(1), 32–41.
+Forsgren, N., Humble, J., & Kim, G. (2018). Accelerate: The science of lean software and DevOps. IT Revolution Press.
+Google Cloud DORA. (2024). 2024 Accelerate State of DevOps Report. Google Cloud.
+International Organization for Standardization. (2023). ISO/IEC 25010:2023 Systems and software engineering - Systems and software Quality Requirements and Evaluation (SQuaRE) - Product quality model.
+International Organization for Standardization. (2018). ISO/IEC/IEEE 29148:2018 Systems and software engineering - Life cycle processes - Requirements engineering.
+International Organization for Standardization. (2017). ISO/IEC/IEEE 12207:2017 Systems and software engineering - Software life cycle processes.
+National Institute of Standards and Technology. (2012). Guide for conducting risk assessments (NIST Special Publication 800-30 Rev. 1). U.S. Department of Commerce.
+National Institute of Standards and Technology. (2022). Secure Software Development Framework (SSDF) Version 1.1: Recommendations for mitigating the risk of software vulnerabilities (NIST Special Publication 800-218). U.S. Department of Commerce.
+Open Worldwide Application Security Project. (2025). OWASP Application Security Verification Standard (ASVS), Version 5.0.0.
+Pressman, R. S., & Maxim, B. R. (2020). Software engineering: A practitioner’s approach (9th ed.). McGraw-Hill.
+Schwaber, K., & Sutherland, J. (2020). The Scrum Guide: The definitive guide to Scrum: The rules of the game.
+Sommerville, I. (2016). Software engineering (10th ed.). Pearson.
+Wiegers, K., & Beatty, J. (2013). Software requirements (3rd ed.). Microsoft Press.
+Federal Republic of Nigeria. (2023). Nigeria Data Protection Act, 2023.
