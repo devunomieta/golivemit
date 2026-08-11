@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Outfit, JetBrains_Mono } from "next/font/google";
+import { DesktopGuard } from "@/components/DesktopGuard";
 import "./globals.css";
 
 const inter = Inter({
@@ -33,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable} ${jetbrainsMono.variable} dark antialiased`}>
       <body className="bg-[#0B0F19] text-slate-100 font-sans selection:bg-cyan-500 selection:text-black min-h-screen">
-        {children}
+        <DesktopGuard>{children}</DesktopGuard>
       </body>
     </html>
   );
