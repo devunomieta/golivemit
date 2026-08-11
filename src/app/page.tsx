@@ -74,14 +74,16 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-gray-100 flex flex-col font-['Inter']">
-      {!isAuthenticated && <AuthLoginModal onLoginSuccess={handleLoginSuccess} />}
+    <div className="min-h-screen bg-[#070A12] text-slate-100 flex flex-col font-sans">
+      {!isAuthenticated ? (
+        <AuthLoginModal onLoginSuccess={handleLoginSuccess} />
+      ) : (
+        <>
+          {/* Header & Role Navigation (Shown only when authenticated) */}
+          <RoleSwitcher activeUser={activeUser} onUserChange={setActiveUser} onSignOut={handleSignOut} />
 
-      {/* Header & Role Navigation */}
-      <RoleSwitcher activeUser={activeUser} onUserChange={setActiveUser} onSignOut={handleSignOut} />
-
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
+          {/* Main Content Area */}
+          <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
         {/* Navigation Tabs */}
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-2">
@@ -188,9 +190,11 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 bg-[#0B0F19] py-4 px-8 text-center text-xs text-gray-500">
+      <footer className="border-t border-white/10 bg-[#070A12] py-4 px-8 text-center text-xs text-slate-500 font-mono">
         GoLive DSS • Risk-Based Decision Support System for Enterprise Software Delivery • MIVA Open University MIT Project 2026
       </footer>
+        </>
+      )}
     </div>
   );
 }
