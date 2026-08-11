@@ -9,7 +9,7 @@ interface AuthLoginModalProps {
 }
 
 export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({ onLoginSuccess }) => {
-  const [email, setEmail] = React.useState('admin@golive.io');
+  const [email, setEmail] = React.useState(MOCK_USERS[0].email);
   const [password, setPassword] = React.useState('password123');
   const [showPassword, setShowPassword] = React.useState(false);
   const [selectedPersonaId, setSelectedPersonaId] = React.useState(MOCK_USERS[0].id);
