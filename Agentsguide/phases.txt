@@ -1,0 +1,22 @@
+8. Approved Implementation Roadmap
+ Phase 0: Research & Requirements Baseline (Completed)
+Extracted requirements from Research/golivedoc.docx.
+Registered permanent instructions in Agentsguide/instructions.md.
+ Phase 1: Project Setup & Brand Architecture (Completed)
+Initialize Next.js 14 App Router project with TypeScript.
+Implement design system tokens in globals.css (Dark slate, glassmorphism, accent colors, typography).
+Setup .gitignore to exclude sensitive credentials and test scripts.
+Configure package script: "build": "npm run type-check && npm run lint && next build".
+ Phase 2: Core Scoring Engine & Supabase Migrations
+Implement scoring & Gate Rule blocker override utility (lib/scoringEngine.ts).
+Create supabase/migrations/001_initial_schema.sql seeding 10 domains and standard criteria across Developers, QA, DevOps, Security, and Business.
+ Phase 3: Screen & Component Development
+Build Auth & Role Switcher component.
+Build Executive Dashboard with Recharts radial gauge & 10-domain radar chart using Lucide icons.
+Build Assessment Form Wizard with Likelihood/Impact interactive sliders and evidence uploader.
+Build Approval Workflow modal with Conditional Go action tracker.
+Build PDF Report export service.
+ Phase 4: Verification & Vercel Deployment
+Run typecheck, lint, and build validation (npm run build).
+Verify Gate Rule override logic correctly enforces NO-GO when any blocking gate fails.
+Deploy application to Vercel and connect live to Supabase.

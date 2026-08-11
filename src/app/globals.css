@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Brand Backgrounds & Surfaces */
+    --bg-dark-base: #0B0F19;         /* Deep Midnight Slate */
+    --bg-dark-surface: #111827;      /* Surface Card Dark */
+    --bg-dark-elevated: #1F2937;     /* Modal / Floating Surface */
+    --glass-bg: rgba(17, 24, 39, 0.75);/* Glassmorphism Background */
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-hover: rgba(31, 41, 55, 0.85);
+
+    /* Primary Accent & Brand Colors */
+    --brand-cyan: #06B6D4;          /* Tech Accent / Interactive Focus */
+    --brand-cyan-glow: rgba(6, 182, 212, 0.25);
+    --brand-indigo: #6366F1;        /* Primary Button / Gradient Accent */
+
+    /* Decision Status Colors */
+    --status-go: #10B981;           /* Green - Go Recommendation */
+    --status-go-bg: rgba(16, 185, 129, 0.12);
+    --status-conditional: #F59E0B;   /* Amber - Conditional Go */
+    --status-conditional-bg: rgba(245, 158, 11, 0.12);
+    --status-nogo: #F43F5E;         /* Red - No-Go / Gate Blocker */
+    --status-nogo-bg: rgba(244, 63, 94, 0.12);
+
+    /* Text Colors */
+    --text-primary: #F9FAFB;
+    --text-secondary: #9CA3AF;
+    --text-muted: #6B7280;
+
+    /* Visual FX */
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --shadow-glow-cyan: 0 0 20px rgba(6, 182, 212, 0.2);
+    --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+    --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark-base);
+  color: var(--text-primary);
+  font-family: var(--font-body), 'Inter', -apple-system, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism Utility Classes */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.glass-card-hover {
+  transition: var(--transition-smooth);
+}
+
+.glass-card-hover:hover {
+  border-color: rgba(6, 182, 212, 0.3);
+  box-shadow: var(--shadow-glow-cyan);
+  transform: translateY(-2px);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-dark-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-dark-elevated);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-cyan);
+}
