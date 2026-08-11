@@ -8,60 +8,106 @@ import { ApprovalWorkflow } from '@/components/ApprovalWorkflow';
 import { AuditReport } from '@/components/AuditReport';
 import { AuthLoginModal } from '@/components/AuthLoginModal';
 import { 
-  MOCK_USERS, 
   UserProfile, 
-  INITIAL_DOMAINS, 
-  INITIAL_CRITERIA, 
-  INITIAL_RESPONSES, 
+  ReadinessDomain, 
+  ReadinessCriterion, 
+  CriterionResponse, 
   INITIAL_PROJECTS, 
   INITIAL_RELEASES,
   ApprovalRecord
 } from '@/lib/mockData';
 import { 
+  fetchProfiles, 
+  fetchDomains, 
+  fetchCriteria, 
+  fetchAssessmentResponses, 
+  saveAssessmentResponse, 
+  fetchApprovals, 
+  submitApprovalVote 
+} from '@/lib/dataService';
+import { 
   calculateAssessmentReadiness, 
-  CriterionResponse, 
   OverallAssessmentResult 
 } from '@/lib/scoringEngine';
 import { FileText, Layers, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
-  const [activeUser, setActiveUser] = React.useState<UserProfile>(MOCK_USERS[0]); // Admin default
-  const [responses, setResponses] = React.useState<Record<string, CriterionResponse>>(INITIAL_RESPONSES);
-  const [approvals, setApprovals] = React.useState<ApprovalRecord[]>([
-    {
-      id: 'app-1',
-      assessmentId: 'a1',
-      approverName: 'Dr. Charles Adams (Release Board)',
-      decision: 'NO_GO',
-      conditionsText: 'Rollback script must be validated before production deployment.',
-      conditionsOwner: 'David Okonjo (Lead Dev)',
-      dueDate: '2026-08-28',
-      createdAt: '2026-08-11 14:30',
-    }
-  ]);
-
+  const [users, setUsers] = React.useState<UserProfile[]>([]);
+  const [activeUser, setActiveUser] = React.useState<UserProfile | null>(null);
+  const [domains, setDomains] = React.useState<ReadinessDomain[]>([]);
+  const [criteria, setCriteria] = React.useState<ReadinessCriterion[]>([]);
+  const [responses, setResponses] = React.useState<Record<string, CriterionResponse>>({});
+  const [approvals, setApprovals] = React.useState<ApprovalRecord[]>([]);
   const [activeModal, setActiveModal] = React.useState<'dashboard' | 'assessment' | 'approval' | 'report'>('dashboard');
+
+  const activeRelease = INITIAL_RELEASES[0];
+  const activeProject = INITIAL_PROJECTS[0];
+
+  // Initial Dynamic Data Hydration
+  React.useEffect(() => {
+    async function loadData() {
+      const fetchedUsers = await fetchProfiles();
+      const fetchedDomains = await fetchDomains();
+      const fetchedCriteria = await fetchCriteria();
+      const fetchedResponses = await fetchAssessmentResponses(activeRelease.id);
+      const fetchedApprovals = await fetchApprovals(activeRelease.id);
+
+      setUsers(fetchedUsers);
+      setActiveUser(fetchedUsers[0] || null);
+      setDomains(fetchedDomains);
+      setCriteria(fetchedCriteria);
+      setResponses(fetchedResponses);
+      setApprovals(fetchedApprovals);
+    }
+    loadData();
+  }, [activeRelease.id]);
 
   // Calculate live readiness assessment result using the engine
   const assessmentResult: OverallAssessmentResult = React.useMemo(() => {
-    return calculateAssessmentReadiness(INITIAL_DOMAINS, INITIAL_CRITERIA, responses);
-  }, [responses]);
+    return calculateAssessmentReadiness(domains, criteria, responses);
+  }, [domains, criteria, responses]);
 
-  const handleSaveResponse = (criterionId: string, updatedResponse: CriterionResponse) => {
-    setResponses((prev) => ({
-      ...prev,
+  const handleSaveResponse = async (criterionId: string, updatedResponse: CriterionResponse) => {
+    const updated = {
+      ...responses,
       [criterionId]: updatedResponse,
-    }));
+    };
+    setResponses(updated);
+
+    if (activeUser) {
+      await saveAssessmentResponse(activeRelease.id, activeUser.id, updated);
+    }
   };
 
-  const handleAddApproval = (record: Omit<ApprovalRecord, 'id' | 'createdAt'>) => {
+  const handleAddApproval = async (
+    decision: 'GO' | 'CONDITIONAL_GO' | 'NO_GO',
+    conditionsText?: string,
+    conditionsOwner?: string,
+    dueDate?: string
+  ) => {
     const newRecord: ApprovalRecord = {
-      ...record,
       id: `app-${Date.now()}`,
-      createdAt: new Date().toLocaleString(),
+      assessmentId: 'ass-1',
+      approverName: activeUser ? activeUser.name : 'Approver',
+      decision,
+      conditionsText,
+      conditionsOwner,
+      dueDate,
+      createdAt: new Date().toISOString(),
     };
     setApprovals((prev) => [newRecord, ...prev]);
+
+    if (activeUser) {
+      await submitApprovalVote(
+        activeRelease.id,
+        activeUser.id,
+        decision,
+        conditionsText,
+        conditionsOwner,
+        dueDate
+      );
+    }
   };
 
   const handleLoginSuccess = (user: UserProfile) => {
@@ -80,7 +126,14 @@ export default function Home() {
       ) : (
         <>
           {/* Header & Role Navigation (Shown only when authenticated) */}
-          <RoleSwitcher activeUser={activeUser} onUserChange={setActiveUser} onSignOut={handleSignOut} />
+      {activeUser && (
+        <RoleSwitcher 
+          activeUser={activeUser} 
+          onUserChange={setActiveUser} 
+          onSignOut={handleSignOut} 
+          availableUsers={users}
+        />
+      )}
 
           {/* Main Content Area */}
           <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
@@ -145,44 +198,51 @@ export default function Home() {
         {activeModal === 'dashboard' && (
           <ExecutiveDashboard
             assessmentResult={assessmentResult}
-            projectName={INITIAL_PROJECTS[0].projectName}
-            releaseName={INITIAL_RELEASES[0].releaseName}
-            targetDate={INITIAL_RELEASES[0].targetDate}
+            projectName={activeProject.projectName}
+            releaseName={activeRelease.releaseName}
+            targetDate={activeRelease.targetDate}
             onOpenAssessment={() => setActiveModal('assessment')}
             onOpenApproval={() => setActiveModal('approval')}
           />
         )}
 
-        {activeModal === 'assessment' && (
+        {activeModal === 'assessment' && activeUser && (
           <AssessmentWizard
             userRole={activeUser.role}
             userName={activeUser.name}
-            domains={INITIAL_DOMAINS}
-            criteria={INITIAL_CRITERIA}
+            domains={domains}
+            criteria={criteria}
             responses={responses}
             onSaveResponse={handleSaveResponse}
             onClose={() => setActiveModal('dashboard')}
           />
         )}
 
-        {activeModal === 'approval' && (
+        {activeModal === 'approval' && activeUser && (
           <ApprovalWorkflow
             userRole={activeUser.role}
             userName={activeUser.name}
             assessmentResult={assessmentResult}
             approvals={approvals}
-            onSubmitApproval={handleAddApproval}
+            onSubmitApproval={(rec) =>
+              handleAddApproval(
+                rec.decision,
+                rec.conditionsText,
+                rec.conditionsOwner,
+                rec.dueDate
+              )
+            }
             onClose={() => setActiveModal('dashboard')}
           />
         )}
 
         {activeModal === 'report' && (
           <AuditReport
-            projectName={INITIAL_PROJECTS[0].projectName}
-            releaseName={INITIAL_RELEASES[0].releaseName}
-            targetDate={INITIAL_RELEASES[0].targetDate}
+            projectName={activeProject.projectName}
+            releaseName={activeRelease.releaseName}
+            targetDate={activeRelease.targetDate}
             assessmentResult={assessmentResult}
-            criteria={INITIAL_CRITERIA}
+            criteria={criteria}
             responses={responses}
             onClose={() => setActiveModal('dashboard')}
           />

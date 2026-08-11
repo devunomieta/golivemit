@@ -8,9 +8,15 @@ interface RoleSwitcherProps {
   activeUser: UserProfile;
   onUserChange: (user: UserProfile) => void;
   onSignOut?: () => void;
+  availableUsers?: UserProfile[];
 }
 
-export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ activeUser, onUserChange, onSignOut }) => {
+export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ 
+  activeUser, 
+  onUserChange, 
+  onSignOut,
+  availableUsers = MOCK_USERS 
+}) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   const getRoleBadgeStyle = (role: string) => {
@@ -90,7 +96,7 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ activeUser, onUserCh
                 Switch Persona Context
               </div>
               <div className="space-y-1">
-                {MOCK_USERS.map((user) => {
+                {availableUsers.map((user) => {
                   const isSelected = user.id === activeUser.id;
                   return (
                     <button

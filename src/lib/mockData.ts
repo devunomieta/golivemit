@@ -6,6 +6,14 @@ import {
   AssessmentStatus
 } from '@/lib/scoringEngine';
 
+export type { 
+  UserRole, 
+  ReadinessDomain, 
+  ReadinessCriterion, 
+  CriterionResponse,
+  AssessmentStatus
+};
+
 export interface UserProfile {
   id: string;
   name: string;
