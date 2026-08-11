@@ -57,7 +57,7 @@ export const DesktopGuard: React.FC<DesktopGuardProps> = ({ children }) => {
               </div>
             </div>
             <p className="text-[11px] text-slate-500">
-              GoLive DSS governance command-center requires a full desktop viewport display.
+              GoLive DSS requires a full desktop viewport display.
             </p>
           </div>
         </div>
