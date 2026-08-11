@@ -92,7 +92,7 @@ export function calculateAssessmentReadiness(
     }
 
     let domainRisk = 0;
-    let maxDomainRisk = domainCriteria.length * 25; // Max score per criterion = 5 * 5 = 25
+    const maxDomainRisk = domainCriteria.length * 25; // Max score per criterion = 5 * 5 = 25
     let domainHasBlocker = false;
     const domainBlockers: string[] = [];
 
