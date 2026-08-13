@@ -28,6 +28,17 @@ export interface ReadinessCriterion {
   gateRuleFlag: boolean; // Mandatory gate blocker if failed
 }
 
+export interface AuditHistoryRecord {
+  id: string;
+  updatedBy: string;
+  updatedAt: string;
+  action: string;
+  previousRiskScore?: number;
+  newRiskScore?: number;
+  comment?: string;
+  evidenceUrl?: string;
+}
+
 export interface CriterionResponse {
   criterionId: string;
   likelihood: number; // 1 (Very Low) to 5 (Very High)
@@ -35,9 +46,13 @@ export interface CriterionResponse {
   calculatedRiskScore: number; // Likelihood * Impact
   comment?: string;
   evidenceUrl?: string;
+  evidenceFilename?: string;
+  evidenceType?: 'url' | 'file';
   updatedBy?: string;
   updatedAt?: string;
+  auditTrail?: AuditHistoryRecord[];
 }
+
 
 export interface DomainScoreResult {
   domainId: string;
