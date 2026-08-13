@@ -39,6 +39,11 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
   const [localResponses, setLocalResponses] = React.useState<Record<string, CriterionResponse>>(responses);
   const [savedNotice, setSavedNotice] = React.useState(false);
 
+  // Sync local responses when parent responses prop updates
+  React.useEffect(() => {
+    setLocalResponses(responses);
+  }, [responses]);
+
   const selectedDomain = domains.find((d) => d.id === selectedDomainId) || domains[0];
   const domainCriteria = criteria.filter((c) => c.domainId === selectedDomainId);
 
@@ -59,7 +64,10 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
 
     updated.calculatedRiskScore = updated.likelihood * updated.impact;
 
-    setLocalResponses((prev) => ({ ...prev, [criterionId]: updated }));
+    const newLocal = { ...localResponses, [criterionId]: updated };
+    setLocalResponses(newLocal);
+    // Real-time update to parent component
+    onSaveResponse(criterionId, updated);
   };
 
   const handleTextChange = (criterionId: string, field: 'comment' | 'evidenceUrl', value: string) => {
@@ -77,7 +85,10 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
       updatedAt: new Date().toISOString(),
     };
 
-    setLocalResponses((prev) => ({ ...prev, [criterionId]: updated }));
+    const newLocal = { ...localResponses, [criterionId]: updated };
+    setLocalResponses(newLocal);
+    // Real-time update to parent component
+    onSaveResponse(criterionId, updated);
   };
 
   const handleSaveAll = () => {
@@ -87,6 +98,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
     setSavedNotice(true);
     setTimeout(() => setSavedNotice(false), 3000);
   };
+
 
   const getScoreBadge = (score: number) => {
     if (score >= 15) return 'bg-rose-950/80 text-rose-300 border-rose-800/50';

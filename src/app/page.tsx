@@ -45,14 +45,49 @@ export default function Home() {
   const [responses, setResponses] = React.useState<Record<string, CriterionResponse>>({});
   const [approvals, setApprovals] = React.useState<ApprovalRecord[]>([]);
   
-  // Project & Release State
+  // Project & Release State with LocalStorage Initialization
   const [projects, setProjects] = React.useState<ProjectRecord[]>(INITIAL_PROJECTS);
   const [releases, setReleases] = React.useState<ReleaseRecord[]>(INITIAL_RELEASES);
-  const [activeProject, setActiveProject] = React.useState<ProjectRecord>(INITIAL_PROJECTS[0]);
-  const [activeRelease, setActiveRelease] = React.useState<ReleaseRecord>(INITIAL_RELEASES[0]);
+  
+  const [activeProject, setActiveProject] = React.useState<ProjectRecord>(() => {
+    if (typeof window !== 'undefined') {
+      const savedProjId = localStorage.getItem('golive_active_project_id');
+      if (savedProjId) {
+        const found = INITIAL_PROJECTS.find((p) => p.id === savedProjId);
+        if (found) return found;
+      }
+    }
+    return INITIAL_PROJECTS[0];
+  });
+
+  const [activeRelease, setActiveRelease] = React.useState<ReleaseRecord>(() => {
+    if (typeof window !== 'undefined') {
+      const savedRelId = localStorage.getItem('golive_active_release_id');
+      if (savedRelId) {
+        const found = INITIAL_RELEASES.find((r) => r.id === savedRelId);
+        if (found) return found;
+      }
+    }
+    return INITIAL_RELEASES[0];
+  });
 
   const [activeModal, setActiveModal] = React.useState<'dashboard' | 'assessment' | 'approval' | 'report'>('dashboard');
   const [showProjectManager, setShowProjectManager] = React.useState(false);
+
+  // Persist Active Project & Release Selections
+  const handleSelectProject = (proj: ProjectRecord) => {
+    setActiveProject(proj);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('golive_active_project_id', proj.id);
+    }
+  };
+
+  const handleSelectRelease = (rel: ReleaseRecord) => {
+    setActiveRelease(rel);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('golive_active_release_id', rel.id);
+    }
+  };
 
   // Load Projects & Releases on Mount
   const loadProjectsAndReleases = React.useCallback(async () => {
@@ -62,7 +97,10 @@ export default function Home() {
     setReleases(fetchedReleases);
 
     if (fetchedProjects.length > 0) {
-      setActiveProject((prev) => fetchedProjects.find((p) => p.id === prev.id) || fetchedProjects[0]);
+      setActiveProject((prev) => {
+        const matching = fetchedProjects.find((p) => p.id === prev.id);
+        return matching || fetchedProjects[0];
+      });
     }
   }, []);
 
@@ -89,6 +127,23 @@ export default function Home() {
   React.useEffect(() => {
     async function loadReleaseDetails() {
       if (!activeRelease) return;
+      
+      // First check local storage override for this release
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem(`golive_responses_${activeRelease.id}`);
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            setResponses(parsed);
+            const fetchedApprovals = await fetchApprovals(activeRelease.id);
+            setApprovals(fetchedApprovals);
+            return;
+          } catch (e) {
+            console.error('Failed to parse cached responses', e);
+          }
+        }
+      }
+
       const fetchedResponses = await fetchAssessmentResponses(activeRelease.id);
       const fetchedApprovals = await fetchApprovals(activeRelease.id);
       setResponses(fetchedResponses);
@@ -109,10 +164,16 @@ export default function Home() {
     };
     setResponses(updated);
 
+    // Save to browser LocalStorage immediately for persistent page reloads
+    if (activeRelease && typeof window !== 'undefined') {
+      localStorage.setItem(`golive_responses_${activeRelease.id}`, JSON.stringify(updated));
+    }
+
     if (activeUser && activeRelease) {
       await saveAssessmentResponse(activeRelease.id, activeUser.id, updated);
     }
   };
+
 
   const handleAddApproval = async (
     decision: 'GO' | 'CONDITIONAL_GO' | 'NO_GO',
@@ -172,10 +233,11 @@ export default function Home() {
               releases={releases}
               activeProject={activeProject}
               activeRelease={activeRelease}
-              onSelectProject={setActiveProject}
-              onSelectRelease={setActiveRelease}
+              onSelectProject={handleSelectProject}
+              onSelectRelease={handleSelectRelease}
             />
           )}
+
 
           {/* Main Content Area */}
           <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
