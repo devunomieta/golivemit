@@ -89,6 +89,8 @@ export default function Home() {
     }
   };
 
+  const [isLoadingData, setIsLoadingData] = React.useState(true);
+
   // Load Projects & Releases on Mount
   const loadProjectsAndReleases = React.useCallback(async () => {
     const fetchedProjects = await fetchProjects();
@@ -98,7 +100,7 @@ export default function Home() {
 
     if (fetchedProjects.length > 0) {
       setActiveProject((prev) => {
-        const matching = fetchedProjects.find((p) => p.id === prev.id);
+        const matching = fetchedProjects.find((p) => p.id === prev?.id);
         return matching || fetchedProjects[0];
       });
     }
@@ -111,17 +113,19 @@ export default function Home() {
   // Initial Dynamic Data Hydration for Profiles, Criteria & Responses for active release
   React.useEffect(() => {
     async function loadData() {
+      setIsLoadingData(true);
       const fetchedUsers = await fetchProfiles();
       const fetchedDomains = await fetchDomains();
       const fetchedCriteria = await fetchCriteria();
 
       setUsers(fetchedUsers);
-      if (!activeUser) setActiveUser(fetchedUsers[0] || null);
+      if (!activeUser && fetchedUsers.length > 0) setActiveUser(fetchedUsers[0]);
       setDomains(fetchedDomains);
       setCriteria(fetchedCriteria);
+      setIsLoadingData(false);
     }
     loadData();
-  }, [activeUser]);
+  }, []);
 
   // Reactively fetch responses and approvals whenever activeRelease changes
   React.useEffect(() => {
@@ -151,6 +155,7 @@ export default function Home() {
     }
     loadReleaseDetails();
   }, [activeRelease?.id]);
+
 
   // Calculate live readiness assessment result using the engine
   const assessmentResult: OverallAssessmentResult = React.useMemo(() => {
