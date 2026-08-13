@@ -100,6 +100,15 @@ export async function fetchAssessmentResponses(releaseId: string): Promise<Recor
 
     const map: Record<string, CriterionResponse> = {};
     respData.forEach((r) => {
+      let parsedMetadata = undefined;
+      let parsedThread = undefined;
+      try {
+        if (r.evidence_metadata) parsedMetadata = JSON.parse(r.evidence_metadata);
+      } catch { /* empty */ }
+      try {
+        if (r.comments_thread) parsedThread = JSON.parse(r.comments_thread);
+      } catch { /* empty */ }
+
       map[r.criterion_id] = {
         criterionId: r.criterion_id,
         likelihood: r.likelihood,
@@ -107,6 +116,12 @@ export async function fetchAssessmentResponses(releaseId: string): Promise<Recor
         calculatedRiskScore: r.calculated_risk_score,
         comment: r.comment || '',
         evidenceUrl: r.evidence_url || '',
+        evidenceFilename: r.evidence_filename || undefined,
+        evidenceType: r.evidence_type || undefined,
+        evidenceMetadata: parsedMetadata,
+        commentsThread: parsedThread || [],
+        assignedRoleOverride: r.assigned_role_override || undefined,
+        assignedUserId: r.assigned_user_id || undefined,
       };
     });
     return map;
@@ -168,11 +183,18 @@ export async function saveAssessmentResponse(
       calculated_risk_score: r.calculatedRiskScore,
       comment: r.comment || '',
       evidence_url: r.evidenceUrl || '',
+      evidence_filename: r.evidenceFilename || null,
+      evidence_type: r.evidenceType || null,
+      evidence_metadata: r.evidenceMetadata ? JSON.stringify(r.evidenceMetadata) : null,
+      comments_thread: r.commentsThread ? JSON.stringify(r.commentsThread) : null,
+      assigned_role_override: r.assignedRoleOverride || null,
+      assigned_user_id: r.assignedUserId || null,
     }));
 
     const { error: upsertErr } = await supabase
       .from('assessment_responses')
       .upsert(responsePayload, { onConflict: 'assessment_id,criterion_id' });
+
 
     if (upsertErr) {
       console.error('Supabase Response Upsert Error:', upsertErr);

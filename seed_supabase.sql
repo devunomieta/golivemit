@@ -80,9 +80,16 @@ CREATE TABLE public.assessment_responses (
   calculated_risk_score INTEGER NOT NULL DEFAULT 9,
   comment TEXT,
   evidence_url TEXT,
+  evidence_filename TEXT,
+  evidence_type TEXT,
+  evidence_metadata TEXT,
+  comments_thread TEXT,
+  assigned_role_override TEXT,
+  assigned_user_id TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT unique_assessment_criterion UNIQUE (assessment_id, criterion_id)
 );
+
 
 -- 8. Approvals Table
 CREATE TABLE public.approvals (

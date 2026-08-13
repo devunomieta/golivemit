@@ -39,6 +39,26 @@ export interface AuditHistoryRecord {
   evidenceUrl?: string;
 }
 
+export interface CriterionComment {
+  id: string;
+  authorName: string;
+  authorRole: UserRole;
+  text: string;
+  createdAt: string;
+  updatedAt?: string;
+  isEdited?: boolean;
+}
+
+export interface EvidenceMetadata {
+  url?: string;
+  filename?: string;
+  type?: 'url' | 'file';
+  isWrongFile?: boolean;
+  flaggedBy?: string;
+  flaggedAt?: string;
+  flagReason?: string;
+}
+
 export interface CriterionResponse {
   criterionId: string;
   likelihood: number; // 1 (Very Low) to 5 (Very High)
@@ -48,10 +68,15 @@ export interface CriterionResponse {
   evidenceUrl?: string;
   evidenceFilename?: string;
   evidenceType?: 'url' | 'file';
+  evidenceMetadata?: EvidenceMetadata;
+  commentsThread?: CriterionComment[];
+  assignedRoleOverride?: UserRole;
+  assignedUserId?: string;
   updatedBy?: string;
   updatedAt?: string;
   auditTrail?: AuditHistoryRecord[];
 }
+
 
 
 export interface DomainScoreResult {

@@ -362,10 +362,12 @@ export default function Home() {
                 domains={domains}
                 criteria={criteria}
                 responses={responses}
+                availableUsers={users}
                 onSaveResponse={handleSaveResponse}
                 onClose={() => setActiveModal('dashboard')}
               />
             )}
+
 
             {activeModal === 'approval' && activeUser && (
               <ApprovalWorkflow
