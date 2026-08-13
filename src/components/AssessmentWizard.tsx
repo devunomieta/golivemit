@@ -36,13 +36,17 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
   onClose,
 }) => {
   const [selectedDomainId, setSelectedDomainId] = React.useState<string>(domains[0]?.id || '');
+  const [prevResponsesProp, setPrevResponsesProp] = React.useState(responses);
   const [localResponses, setLocalResponses] = React.useState<Record<string, CriterionResponse>>(responses);
   const [savedNotice, setSavedNotice] = React.useState(false);
 
-  // Sync local responses when parent responses prop updates
-  React.useEffect(() => {
+
+  // Sync state during render when prop changes
+  if (prevResponsesProp !== responses) {
+    setPrevResponsesProp(responses);
     setLocalResponses(responses);
-  }, [responses]);
+  }
+
 
   const selectedDomain = domains.find((d) => d.id === selectedDomainId) || domains[0];
   const domainCriteria = criteria.filter((c) => c.domainId === selectedDomainId);

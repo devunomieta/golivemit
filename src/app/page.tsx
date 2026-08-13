@@ -91,41 +91,46 @@ export default function Home() {
 
   const [isLoadingData, setIsLoadingData] = React.useState(true);
 
-  // Load Projects & Releases on Mount
-  const loadProjectsAndReleases = React.useCallback(async () => {
-    const fetchedProjects = await fetchProjects();
-    const fetchedReleases = await fetchReleases();
-    setProjects(fetchedProjects);
-    setReleases(fetchedReleases);
-
-    if (fetchedProjects.length > 0) {
-      setActiveProject((prev) => {
-        const matching = fetchedProjects.find((p) => p.id === prev?.id);
-        return matching || fetchedProjects[0];
-      });
-    }
-  }, []);
-
+  // Initial Dynamic Data Hydration for Profiles, Criteria, Projects & Releases
   React.useEffect(() => {
-    loadProjectsAndReleases();
-  }, [loadProjectsAndReleases]);
-
-  // Initial Dynamic Data Hydration for Profiles, Criteria & Responses for active release
-  React.useEffect(() => {
+    let isMounted = true;
     async function loadData() {
       setIsLoadingData(true);
-      const fetchedUsers = await fetchProfiles();
-      const fetchedDomains = await fetchDomains();
-      const fetchedCriteria = await fetchCriteria();
+      const [fetchedProjects, fetchedReleases, fetchedUsers, fetchedDomains, fetchedCriteria] = await Promise.all([
+        fetchProjects(),
+        fetchReleases(),
+        fetchProfiles(),
+        fetchDomains(),
+        fetchCriteria(),
+      ]);
 
+      if (!isMounted) return;
+
+      setProjects(fetchedProjects);
+      setReleases(fetchedReleases);
       setUsers(fetchedUsers);
-      if (!activeUser && fetchedUsers.length > 0) setActiveUser(fetchedUsers[0]);
       setDomains(fetchedDomains);
       setCriteria(fetchedCriteria);
+
+      if (fetchedProjects.length > 0) {
+        setActiveProject((prev) => {
+          const matching = fetchedProjects.find((p) => p.id === prev?.id);
+          return matching || fetchedProjects[0];
+        });
+      }
+
+      if (fetchedUsers.length > 0) {
+        setActiveUser((prev) => prev || fetchedUsers[0]);
+      }
+
       setIsLoadingData(false);
     }
     loadData();
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
 
   // Reactively fetch responses and approvals whenever activeRelease changes
   React.useEffect(() => {
@@ -154,7 +159,8 @@ export default function Home() {
       setApprovals(fetchedApprovals);
     }
     loadReleaseDetails();
-  }, [activeRelease?.id]);
+  }, [activeRelease]);
+
 
 
   // Calculate live readiness assessment result using the engine
@@ -219,12 +225,25 @@ export default function Home() {
     setIsAuthenticated(false);
   };
 
-  const isManager = activeUser?.role === 'admin' || activeUser?.role === 'project_manager';
+
+  const handleRefreshData = React.useCallback(async () => {
+    const [fetchedProjects, fetchedReleases] = await Promise.all([
+      fetchProjects(),
+      fetchReleases(),
+    ]);
+    setProjects(fetchedProjects);
+    setReleases(fetchedReleases);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#070A12] text-slate-100 flex flex-col font-sans">
       {!isAuthenticated ? (
         <AuthLoginModal onLoginSuccess={handleLoginSuccess} />
+      ) : isLoadingData ? (
+        <div className="flex-1 flex flex-col items-center justify-center space-y-4 min-h-[80vh]">
+          <div className="w-12 h-12 rounded-full border-4 border-cyan-500/20 border-t-cyan-400 animate-spin glow-cyan" />
+          <p className="text-xs font-semibold text-cyan-300 font-mono tracking-widest uppercase">Hydrating Enterprise Governance State...</p>
+        </div>
       ) : (
         <>
           {/* Streamlined Header with Context Selector */}
@@ -244,71 +263,87 @@ export default function Home() {
           )}
 
 
+
           {/* Main Content Area */}
           <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
             
-            {/* Primary Navigation Tabs */}
+            {/* Project Governance Controls Sub-header */}
+            <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-cyan-950/40 border border-white/10 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+                  <FolderCog className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-white tracking-wide">Project Governance Hub</h2>
+                  <p className="text-xs text-slate-400">Manage enterprise projects, target release candidates, and assessment workflows</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowProjectManager(true)}
+                  className="px-4 py-2 rounded-xl bg-cyan-600/90 hover:bg-cyan-500 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(6,182,212,0.25)]"
+                >
+                  <FolderCog className="w-4 h-4" />
+                  <span>Manage Projects & Releases</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Navigation Tabs */}
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => setActiveModal('dashboard')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
                     activeModal === 'dashboard'
-                      ? 'bg-cyan-950/80 border-cyan-500/50 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
-                      : 'bg-gray-900/60 border-white/5 text-gray-400 hover:text-gray-200'
+                      ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 glow-cyan'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                   }`}
                 >
-                  <ShieldCheck className="w-4 h-4" />
+                  <Layers className="w-4 h-4" />
                   <span>Executive Dashboard</span>
                 </button>
 
                 <button
                   onClick={() => setActiveModal('assessment')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
                     activeModal === 'assessment'
-                      ? 'bg-cyan-950/80 border-cyan-500/50 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
-                      : 'bg-gray-900/60 border-white/5 text-gray-400 hover:text-gray-200'
+                      ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 glow-cyan'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                   }`}
                 >
-                  <Layers className="w-4 h-4" />
+                  <FileText className="w-4 h-4" />
                   <span>Assessment Form</span>
                 </button>
 
                 <button
                   onClick={() => setActiveModal('approval')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
                     activeModal === 'approval'
-                      ? 'bg-cyan-950/80 border-cyan-500/50 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
-                      : 'bg-gray-900/60 border-white/5 text-gray-400 hover:text-gray-200'
+                      ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 glow-cyan'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                   }`}
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Governance Approval</span>
+                  <span>Governance Board</span>
                 </button>
 
                 <button
                   onClick={() => setActiveModal('report')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
                     activeModal === 'report'
-                      ? 'bg-cyan-950/80 border-cyan-500/50 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
-                      : 'bg-gray-900/60 border-white/5 text-gray-400 hover:text-gray-200'
+                      ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 glow-cyan'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                   }`}
                 >
-                  <FileText className="w-4 h-4" />
+                  <ShieldCheck className="w-4 h-4" />
                   <span>Audit Report</span>
-                </button>
-
-                <button
-                  onClick={() => setShowProjectManager(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all border bg-slate-900/80 border-cyan-500/30 text-cyan-400 hover:bg-cyan-950/50 hover:border-cyan-500/60 ml-auto sm:ml-2"
-                >
-                  <FolderCog className="w-4 h-4" />
-                  <span>{isManager ? 'Manage Projects' : 'Project Directory'}</span>
                 </button>
               </div>
             </div>
 
-            {/* Dynamic View Rendering */}
+            {/* Active View Content */}
             {activeModal === 'dashboard' && (
               <ExecutiveDashboard
                 assessmentResult={assessmentResult}
@@ -362,6 +397,7 @@ export default function Home() {
               />
             )}
 
+
             {/* Project Manager Modal */}
             {showProjectManager && activeUser && (
               <ProjectManager
@@ -370,9 +406,9 @@ export default function Home() {
                 releases={releases}
                 activeProject={activeProject}
                 activeRelease={activeRelease}
-                onSelectProject={setActiveProject}
-                onSelectRelease={setActiveRelease}
-                onRefreshData={loadProjectsAndReleases}
+                onSelectProject={handleSelectProject}
+                onSelectRelease={handleSelectRelease}
+                onRefreshData={handleRefreshData}
                 onClose={() => setShowProjectManager(false)}
               />
             )}

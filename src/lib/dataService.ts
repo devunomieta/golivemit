@@ -141,7 +141,8 @@ export async function saveAssessmentResponse(
     if (!assessment) {
       // Check if userId is a valid UUID, otherwise pass null or omit to satisfy UUID database constraints
       const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-      const insertPayload: any = { release_id: releaseId, status: 'under_assessment' };
+      const insertPayload: Record<string, string> = { release_id: releaseId, status: 'under_assessment' };
+
       if (isValidUuid) insertPayload.created_by = userId;
 
       const { data: newAss, error: assErr } = await supabase

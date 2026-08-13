@@ -310,7 +310,8 @@ export function ProjectManager({
                                   {isManager ? (
                                     <select
                                       value={rel.status}
-                                      onChange={(e) => handleUpdateReleaseStatus(rel.id, e.target.value as any)}
+                                      onChange={(e) => handleUpdateReleaseStatus(rel.id, e.target.value as 'draft' | 'under_assessment' | 'approved' | 'rejected')}
+
                                       className="bg-slate-800 border border-white/10 text-slate-200 text-[11px] rounded-lg px-2 py-1 focus:outline-none focus:border-cyan-500"
                                     >
                                       <option value="draft">Draft</option>
@@ -481,7 +482,8 @@ export function ProjectManager({
                   <label className="text-xs font-semibold text-slate-300">Initial Status</label>
                   <select
                     value={releaseStatus}
-                    onChange={(e) => setReleaseStatus(e.target.value as any)}
+                    onChange={(e) => setReleaseStatus(e.target.value as 'draft' | 'under_assessment' | 'approved' | 'rejected')}
+
                     className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500"
                   >
                     <option value="draft">Draft</option>
