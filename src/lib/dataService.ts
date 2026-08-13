@@ -19,15 +19,23 @@ export async function fetchProfiles(): Promise<UserProfile[]> {
     return MOCK_USERS;
   }
   try {
-    const { data, error } = await supabase.from('profiles').select('*');
+    const { data, error } = await supabase.from('profiles').select('*').order('id', { ascending: true });
+
     if (error || !data || data.length === 0) return MOCK_USERS;
-    return data.map((p) => ({
+    const profiles: UserProfile[] = data.map((p) => ({
       id: p.id,
       name: p.full_name,
       email: p.email,
       role: p.role_name,
       department: p.department || 'IT',
     }));
+
+    // If Supabase table has legacy/unseeded data (missing u1 or Mamuzou Raphael), fallback to MOCK_USERS
+    if (!profiles.some(p => p.id === 'u1' && p.name.includes('Mamuzou'))) {
+      return MOCK_USERS;
+    }
+    return profiles;
+
   } catch {
     return MOCK_USERS;
   }

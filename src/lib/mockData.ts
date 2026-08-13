@@ -78,6 +78,8 @@ export const MOCK_USERS: UserProfile[] = [
   { id: 'u8', name: 'Dr. Charles Adams (Release Board)', email: 'charles.a@company.com', role: 'approver', department: 'Executive Board' },
 ];
 
+
+
 export const INITIAL_DOMAINS: ReadinessDomain[] = [
   { id: 'd1', name: 'Functional Readiness', defaultWeight: 15, description: 'Core user journeys passed, business rules validated, UAT sign-off obtained' },
   { id: 'd2', name: 'Defect Readiness', defaultWeight: 15, description: 'Zero open critical defects, high defects have approved workarounds' },

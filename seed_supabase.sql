@@ -151,17 +151,21 @@ CREATE POLICY "Allow All Access" ON public.approvals FOR ALL USING (true) WITH C
 DROP POLICY IF EXISTS "Allow All Access" ON public.audit_logs;
 CREATE POLICY "Allow All Access" ON public.audit_logs FOR ALL USING (true) WITH CHECK (true);
 
--- SEED DATA
 INSERT INTO public.profiles (id, full_name, email, role_name, department) VALUES
-  ('u1', 'David Okonjo', 'david.o@company.com', 'admin', 'Enterprise Delivery Governance'),
-  ('u2', 'Sarah Jenkins', 'sarah.j@company.com', 'project_manager', 'PMO / Delivery Management'),
-  ('u3', 'Alex Chen', 'alex.c@company.com', 'developer', 'Core Engineering'),
-  ('u4', 'Priya Patel', 'priya.p@company.com', 'qa', 'Quality Assurance'),
-  ('u5', 'Marcus Vance', 'marcus.v@company.com', 'devops', 'Platform Infrastructure'),
-  ('u6', 'Elena Rostova', 'elena.r@company.com', 'security', 'Information Security'),
-  ('u7', 'Michael Thorne', 'michael.t@company.com', 'business', 'Product Management'),
-  ('u8', 'Dr. Evelyn Carter', 'evelyn.c@company.com', 'approver', 'Executive Release Board')
-ON CONFLICT (id) DO NOTHING;
+  ('u1', 'Mamuzou Raphael (Admin)', 'm.akpo3855@miva.edu.ng', 'admin', 'IT Governance'),
+  ('u2', 'Sarah Jenkins (PM)', 'sarah.j@company.com', 'project_manager', 'Software Delivery'),
+  ('u3', 'David Okonjo (Lead Dev)', 'david.o@company.com', 'developer', 'Core Engineering'),
+  ('u4', 'Anita Chen (QA Lead)', 'anita.c@company.com', 'qa', 'Quality Assurance'),
+  ('u5', 'Marcus Vance (DevOps)', 'marcus.v@company.com', 'devops', 'Cloud Infra'),
+  ('u6', 'Elena Rostova (Sec Lead)', 'elena.r@company.com', 'security', 'InfoSec'),
+  ('u7', 'Tunde Bakare (Product Owner)', 'tunde.b@company.com', 'business', 'Digital Products'),
+  ('u8', 'Dr. Charles Adams (Release Board)', 'charles.a@company.com', 'approver', 'Executive Board')
+ON CONFLICT (id) DO UPDATE SET
+  full_name = EXCLUDED.full_name,
+  email = EXCLUDED.email,
+  role_name = EXCLUDED.role_name,
+  department = EXCLUDED.department;
+
 
 INSERT INTO public.readiness_domains (id, domain_name, weight, description) VALUES
   ('d1', 'Business & Product Alignment', 10, 'Business value validation, user readiness, and stakeholder sign-off.'),

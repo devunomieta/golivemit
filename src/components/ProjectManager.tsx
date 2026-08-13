@@ -415,14 +415,17 @@ export function ProjectManager({
                     {availableUsers.length > 0 ? (
                       availableUsers.map((u) => (
                         <option key={u.id} value={u.name} className="bg-slate-900 text-white">
-                          {u.name} ({u.role.replace('_', ' ').toUpperCase()})
+                          {u.name}
                         </option>
                       ))
                     ) : (
                       <option value={user.name} className="bg-slate-900 text-white">
-                        {user.name} ({user.role.replace('_', ' ').toUpperCase()})
+                        {user.name}
                       </option>
                     )}
+
+
+
                   </select>
                 </div>
               </div>
