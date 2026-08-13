@@ -18,12 +18,23 @@ import {
   ArrowRight
 } from 'lucide-react';
 
+const PREDEFINED_DEPARTMENTS = [
+  'Enterprise Engineering',
+  'Fintech & Core Payments',
+  'Quality Assurance & Testing',
+  'Cloud Infrastructure & DevOps',
+  'Information Security & Governance',
+  'Product & Digital Delivery',
+  'Business Architecture & Compliance',
+];
+
 interface ProjectManagerProps {
   user: UserProfile;
   projects: ProjectRecord[];
   releases: ReleaseRecord[];
   activeProject: ProjectRecord | null;
   activeRelease: ReleaseRecord | null;
+  availableUsers?: UserProfile[];
   onSelectProject: (project: ProjectRecord) => void;
   onSelectRelease: (release: ReleaseRecord) => void;
   onRefreshData: () => void;
@@ -36,6 +47,7 @@ export function ProjectManager({
   releases,
   activeProject,
   activeRelease,
+  availableUsers = [],
   onSelectProject,
   onSelectRelease,
   onRefreshData,
@@ -48,10 +60,11 @@ export function ProjectManager({
 
   // New Project Form State
   const [projectName, setProjectName] = useState('');
-  const [department, setDepartment] = useState('Engineering');
+  const [department, setDepartment] = useState(PREDEFINED_DEPARTMENTS[0]);
   const [ownerName, setOwnerName] = useState(user.name);
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   // New Release Form State
   const [selectedProjectIdForRelease, setSelectedProjectIdForRelease] = useState<string>(
@@ -377,28 +390,43 @@ export function ProjectManager({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-300">Department / Unit *</label>
-                  <input
-                    type="text"
+                  <select
                     required
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
-                    placeholder="e.g. Fintech Engineering"
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500"
-                  />
+                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500 cursor-pointer"
+                  >
+                    {PREDEFINED_DEPARTMENTS.map((dept) => (
+                      <option key={dept} value={dept} className="bg-slate-900 text-white">
+                        {dept}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-300">Project Owner *</label>
-                  <input
-                    type="text"
+                  <select
                     required
                     value={ownerName}
                     onChange={(e) => setOwnerName(e.target.value)}
-                    placeholder="e.g. Sarah Jenkins"
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500"
-                  />
+                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500 cursor-pointer"
+                  >
+                    {availableUsers.length > 0 ? (
+                      availableUsers.map((u) => (
+                        <option key={u.id} value={u.name} className="bg-slate-900 text-white">
+                          {u.name} ({u.role.replace('_', ' ').toUpperCase()})
+                        </option>
+                      ))
+                    ) : (
+                      <option value={user.name} className="bg-slate-900 text-white">
+                        {user.name} ({user.role.replace('_', ' ').toUpperCase()})
+                      </option>
+                    )}
+                  </select>
                 </div>
               </div>
+
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-300">Project Description</label>

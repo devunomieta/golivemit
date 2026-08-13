@@ -409,12 +409,14 @@ export default function Home() {
                 releases={releases}
                 activeProject={activeProject}
                 activeRelease={activeRelease}
+                availableUsers={users}
                 onSelectProject={handleSelectProject}
                 onSelectRelease={handleSelectRelease}
                 onRefreshData={handleRefreshData}
                 onClose={() => setShowProjectManager(false)}
               />
             )}
+
           </main>
 
           {/* Footer */}
