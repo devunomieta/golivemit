@@ -58,11 +58,16 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           <div>
             <div className="text-[11px] uppercase font-mono text-rose-400 font-bold tracking-widest">Automated Decision Engine</div>
             <div className="text-3xl font-black text-white tracking-wider font-display">NO-GO</div>
-            <p className="text-xs text-rose-200/80 mt-0.5">High residual risk or critical gate blocker override active</p>
+            <p className="text-xs text-rose-200/90 mt-0.5 font-medium">
+              {hasGateBlocker 
+                ? `Gate Blocker Override Active (${activeBlockers.length} Critical Blocker failing despite ${overallScore}% score)` 
+                : 'High residual risk below delivery readiness threshold'}
+            </p>
           </div>
         </div>
       );
     }
+
 
     if (recommendation === 'CONDITIONAL_GO') {
       return (

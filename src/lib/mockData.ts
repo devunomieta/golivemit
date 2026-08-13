@@ -118,10 +118,11 @@ export const INITIAL_RELEASES: ReleaseRecord[] = [
   { id: 'r2', projectId: 'p2', releaseName: 'Portal Self-Service v3.0.0-RC1', targetDate: '2026-09-10', status: 'draft' },
 ];
 
-export let MOCK_PROJECTS_STORE: ProjectRecord[] = [...INITIAL_PROJECTS];
-export let MOCK_RELEASES_STORE: ReleaseRecord[] = [...INITIAL_RELEASES];
+export const MOCK_PROJECTS_STORE: ProjectRecord[] = [...INITIAL_PROJECTS];
+export const MOCK_RELEASES_STORE: ReleaseRecord[] = [...INITIAL_RELEASES];
 
-export const INITIAL_RESPONSES: Record<string, CriterionResponse> = {
+// Release r1 (Core Banking API): Has 1 Gate Blocker on c9 -> NO-GO (72%)
+export const RESPONSES_RELEASE_R1: Record<string, CriterionResponse> = {
   c1: { criterionId: 'c1', likelihood: 1, impact: 5, calculatedRiskScore: 5, comment: 'UAT completed with 100% sign-off from Product Owner.', evidenceUrl: 'https://jira.company.com/uat-signoff-882' },
   c2: { criterionId: 'c2', likelihood: 2, impact: 3, calculatedRiskScore: 6, comment: 'Coverage at 84.5% on SonarQube.', evidenceUrl: 'https://sonar.company.com/build/4910' },
   c3: { criterionId: 'c3', likelihood: 1, impact: 5, calculatedRiskScore: 5, comment: 'Zero Sev-1 defects remaining in candidate release build.', evidenceUrl: 'https://jira.company.com/defects/sev1-zero' },
@@ -137,3 +138,28 @@ export const INITIAL_RESPONSES: Record<string, CriterionResponse> = {
   c13: { criterionId: 'c13', likelihood: 2, impact: 4, calculatedRiskScore: 8, comment: 'NDPA 2023 data compliance checklist verified.' },
   c14: { criterionId: 'c14', likelihood: 2, impact: 2, calculatedRiskScore: 4, comment: 'Release notes finalized in Confluence.' },
 };
+
+// Release r2 (Customer Portal v3.0): High readiness, 0 Gate Blockers -> GO (89%)
+export const RESPONSES_RELEASE_R2: Record<string, CriterionResponse> = {
+  c1: { criterionId: 'c1', likelihood: 1, impact: 4, calculatedRiskScore: 4, comment: 'UAT 100% completed by Digital Product Lead.', evidenceUrl: 'https://jira.company.com/portal-uat' },
+  c2: { criterionId: 'c2', likelihood: 1, impact: 3, calculatedRiskScore: 3, comment: 'Code coverage at 88.2%.' },
+  c3: { criterionId: 'c3', likelihood: 1, impact: 4, calculatedRiskScore: 4, comment: 'Zero open critical defects.' },
+  c4: { criterionId: 'c4', likelihood: 1, impact: 2, calculatedRiskScore: 2, comment: 'Regression suite pass rate 99.1%.' },
+  c5: { criterionId: 'c5', likelihood: 1, impact: 4, calculatedRiskScore: 4, comment: 'Security scan passed zero critical vulnerabilities.' },
+  c6: { criterionId: 'c6', likelihood: 1, impact: 3, calculatedRiskScore: 3, comment: 'OAuth2 authentication verified.' },
+  c7: { criterionId: 'c7', likelihood: 1, impact: 2, calculatedRiskScore: 2, comment: 'Average API latency 190ms.' },
+  c8: { criterionId: 'c8', likelihood: 1, impact: 3, calculatedRiskScore: 3, comment: 'Database migration tested.' },
+  c9: { criterionId: 'c9', likelihood: 1, impact: 3, calculatedRiskScore: 3, comment: 'Automated production rollback script verified!', evidenceUrl: 'https://github.com/company/infra/pull/112' },
+  c10: { criterionId: 'c10', likelihood: 1, impact: 2, calculatedRiskScore: 2, comment: 'Staging environment parity verified.' },
+  c11: { criterionId: 'c11', likelihood: 1, impact: 2, calculatedRiskScore: 2, comment: 'Support team trained.' },
+  c12: { criterionId: 'c12', likelihood: 1, impact: 2, calculatedRiskScore: 2, comment: 'Customer release notes published.' },
+  c13: { criterionId: 'c13', likelihood: 1, impact: 3, calculatedRiskScore: 3, comment: 'NDPA compliance sign-off obtained.' },
+  c14: { criterionId: 'c14', likelihood: 1, impact: 2, calculatedRiskScore: 2, comment: 'Operations guide published.' },
+};
+
+export const MOCK_RESPONSES_BY_RELEASE: Record<string, Record<string, CriterionResponse>> = {
+  r1: { ...RESPONSES_RELEASE_R1 },
+  r2: { ...RESPONSES_RELEASE_R2 },
+};
+
+export const INITIAL_RESPONSES: Record<string, CriterionResponse> = RESPONSES_RELEASE_R1;

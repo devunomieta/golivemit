@@ -8,8 +8,11 @@ import {
   MOCK_USERS,
   INITIAL_DOMAINS,
   INITIAL_CRITERIA,
-  INITIAL_RESPONSES
+  INITIAL_RESPONSES,
+  MOCK_RESPONSES_BY_RELEASE
 } from '@/lib/mockData';
+
+
 
 export async function fetchProfiles(): Promise<UserProfile[]> {
   if (!isSupabaseConfigured || !supabase) {
@@ -70,7 +73,7 @@ export async function fetchCriteria(): Promise<ReadinessCriterion[]> {
 
 export async function fetchAssessmentResponses(releaseId: string): Promise<Record<string, CriterionResponse>> {
   if (!isSupabaseConfigured || !supabase) {
-    return INITIAL_RESPONSES;
+    return MOCK_RESPONSES_BY_RELEASE[releaseId] || MOCK_RESPONSES_BY_RELEASE['r1'] || INITIAL_RESPONSES;
   }
   try {
     // Get latest assessment for release
@@ -82,14 +85,18 @@ export async function fetchAssessmentResponses(releaseId: string): Promise<Recor
       .limit(1)
       .maybeSingle();
 
-    if (!assessment) return INITIAL_RESPONSES;
+    if (!assessment) {
+      return MOCK_RESPONSES_BY_RELEASE[releaseId] || MOCK_RESPONSES_BY_RELEASE['r1'] || INITIAL_RESPONSES;
+    }
 
     const { data: respData, error } = await supabase
       .from('assessment_responses')
       .select('*')
       .eq('assessment_id', assessment.id);
 
-    if (error || !respData || respData.length === 0) return INITIAL_RESPONSES;
+    if (error || !respData || respData.length === 0) {
+      return MOCK_RESPONSES_BY_RELEASE[releaseId] || MOCK_RESPONSES_BY_RELEASE['r1'] || INITIAL_RESPONSES;
+    }
 
     const map: Record<string, CriterionResponse> = {};
     respData.forEach((r) => {
@@ -104,9 +111,10 @@ export async function fetchAssessmentResponses(releaseId: string): Promise<Recor
     });
     return map;
   } catch {
-    return INITIAL_RESPONSES;
+    return MOCK_RESPONSES_BY_RELEASE[releaseId] || MOCK_RESPONSES_BY_RELEASE['r1'] || INITIAL_RESPONSES;
   }
 }
+
 
 export async function saveAssessmentResponse(
   releaseId: string,
