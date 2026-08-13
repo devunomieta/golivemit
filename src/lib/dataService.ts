@@ -246,3 +246,227 @@ export async function submitApprovalVote(
     return false;
   }
 }
+
+// ----------------------------------------------------
+// PROJECT & RELEASE MANAGEMENT SERVICES
+// ----------------------------------------------------
+
+import { ProjectRecord, ReleaseRecord, MOCK_PROJECTS_STORE, MOCK_RELEASES_STORE } from '@/lib/mockData';
+
+export async function fetchProjects(): Promise<ProjectRecord[]> {
+  if (!isSupabaseConfigured || !supabase) {
+    return MOCK_PROJECTS_STORE;
+  }
+  try {
+    const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
+    if (error || !data || data.length === 0) return MOCK_PROJECTS_STORE;
+    return data.map((p) => ({
+      id: p.id,
+      projectName: p.project_name,
+      department: p.department,
+      description: p.description || '',
+      ownerName: p.owner_name,
+    }));
+  } catch {
+    return MOCK_PROJECTS_STORE;
+  }
+}
+
+export async function createProject(project: Omit<ProjectRecord, 'id'>, userId?: string): Promise<ProjectRecord | null> {
+  const newId = `p-${Date.now()}`;
+  const newProject: ProjectRecord = { id: newId, ...project };
+
+  if (!isSupabaseConfigured || !supabase) {
+    MOCK_PROJECTS_STORE.unshift(newProject);
+    return newProject;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('projects')
+      .insert([
+        {
+          project_name: project.projectName,
+          department: project.department,
+          description: project.description,
+          owner_name: project.ownerName,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error || !data) {
+      MOCK_PROJECTS_STORE.unshift(newProject);
+      return newProject;
+    }
+
+    if (userId) {
+      await supabase.from('audit_logs').insert([
+        {
+          user_id: userId,
+          action: 'CREATE_PROJECT',
+          affected_table: 'projects',
+          details: JSON.stringify({ projectId: data.id, projectName: data.project_name }),
+        },
+      ]);
+    }
+
+    return {
+      id: data.id,
+      projectName: data.project_name,
+      department: data.department,
+      description: data.description || '',
+      ownerName: data.owner_name,
+    };
+  } catch {
+    MOCK_PROJECTS_STORE.unshift(newProject);
+    return newProject;
+  }
+}
+
+export async function updateProject(id: string, updates: Partial<ProjectRecord>, userId?: string): Promise<boolean> {
+  // Update mock store
+  const idx = MOCK_PROJECTS_STORE.findIndex((p) => p.id === id);
+  if (idx !== -1) {
+    MOCK_PROJECTS_STORE[idx] = { ...MOCK_PROJECTS_STORE[idx], ...updates };
+  }
+
+  if (!isSupabaseConfigured || !supabase) return true;
+
+  try {
+    const payload: Record<string, string> = {};
+    if (updates.projectName) payload.project_name = updates.projectName;
+    if (updates.department) payload.department = updates.department;
+    if (updates.description !== undefined) payload.description = updates.description;
+    if (updates.ownerName) payload.owner_name = updates.ownerName;
+
+    const { error } = await supabase.from('projects').update(payload).eq('id', id);
+
+    if (!error && userId) {
+      await supabase.from('audit_logs').insert([
+        {
+          user_id: userId,
+          action: 'UPDATE_PROJECT',
+          affected_table: 'projects',
+          details: JSON.stringify({ projectId: id, updates }),
+        },
+      ]);
+    }
+
+    return !error;
+  } catch {
+    return true;
+  }
+}
+
+export async function fetchReleases(projectId?: string): Promise<ReleaseRecord[]> {
+  if (!isSupabaseConfigured || !supabase) {
+    if (projectId) {
+      return MOCK_RELEASES_STORE.filter((r) => r.projectId === projectId);
+    }
+    return MOCK_RELEASES_STORE;
+  }
+
+  try {
+    let query = supabase.from('releases').select('*').order('created_at', { ascending: false });
+    if (projectId) query = query.eq('project_id', projectId);
+
+    const { data, error } = await query;
+    if (error || !data || data.length === 0) {
+      return projectId ? MOCK_RELEASES_STORE.filter((r) => r.projectId === projectId) : MOCK_RELEASES_STORE;
+    }
+
+    return data.map((r) => ({
+      id: r.id,
+      projectId: r.project_id,
+      releaseName: r.release_name,
+      targetDate: r.target_date,
+      status: r.status,
+    }));
+  } catch {
+    return projectId ? MOCK_RELEASES_STORE.filter((r) => r.projectId === projectId) : MOCK_RELEASES_STORE;
+  }
+}
+
+export async function createRelease(release: Omit<ReleaseRecord, 'id'>, userId?: string): Promise<ReleaseRecord | null> {
+  const newId = `r-${Date.now()}`;
+  const newRelease: ReleaseRecord = { id: newId, ...release };
+
+  if (!isSupabaseConfigured || !supabase) {
+    MOCK_RELEASES_STORE.unshift(newRelease);
+    return newRelease;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('releases')
+      .insert([
+        {
+          project_id: release.projectId,
+          release_name: release.releaseName,
+          target_date: release.targetDate,
+          status: release.status,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error || !data) {
+      MOCK_RELEASES_STORE.unshift(newRelease);
+      return newRelease;
+    }
+
+    if (userId) {
+      await supabase.from('audit_logs').insert([
+        {
+          user_id: userId,
+          action: 'CREATE_RELEASE',
+          affected_table: 'releases',
+          details: JSON.stringify({ releaseId: data.id, releaseName: data.release_name }),
+        },
+      ]);
+    }
+
+    return {
+      id: data.id,
+      projectId: data.project_id,
+      releaseName: data.release_name,
+      targetDate: data.target_date,
+      status: data.status,
+    };
+  } catch {
+    MOCK_RELEASES_STORE.unshift(newRelease);
+    return newRelease;
+  }
+}
+
+export async function updateReleaseStatus(
+  releaseId: string, 
+  status: 'draft' | 'under_assessment' | 'approved' | 'rejected', 
+  userId?: string
+): Promise<boolean> {
+  const idx = MOCK_RELEASES_STORE.findIndex((r) => r.id === releaseId);
+  if (idx !== -1) {
+    MOCK_RELEASES_STORE[idx].status = status;
+  }
+
+  if (!isSupabaseConfigured || !supabase) return true;
+
+  try {
+    const { error } = await supabase.from('releases').update({ status }).eq('id', releaseId);
+    if (!error && userId) {
+      await supabase.from('audit_logs').insert([
+        {
+          user_id: userId,
+          action: 'UPDATE_RELEASE_STATUS',
+          affected_table: 'releases',
+          details: JSON.stringify({ releaseId, status }),
+        },
+      ]);
+    }
+    return !error;
+  } catch {
+    return true;
+  }
+}
+

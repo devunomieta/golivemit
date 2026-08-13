@@ -118,6 +118,9 @@ export const INITIAL_RELEASES: ReleaseRecord[] = [
   { id: 'r2', projectId: 'p2', releaseName: 'Portal Self-Service v3.0.0-RC1', targetDate: '2026-09-10', status: 'draft' },
 ];
 
+export let MOCK_PROJECTS_STORE: ProjectRecord[] = [...INITIAL_PROJECTS];
+export let MOCK_RELEASES_STORE: ReleaseRecord[] = [...INITIAL_RELEASES];
+
 export const INITIAL_RESPONSES: Record<string, CriterionResponse> = {
   c1: { criterionId: 'c1', likelihood: 1, impact: 5, calculatedRiskScore: 5, comment: 'UAT completed with 100% sign-off from Product Owner.', evidenceUrl: 'https://jira.company.com/uat-signoff-882' },
   c2: { criterionId: 'c2', likelihood: 2, impact: 3, calculatedRiskScore: 6, comment: 'Coverage at 84.5% on SonarQube.', evidenceUrl: 'https://sonar.company.com/build/4910' },
