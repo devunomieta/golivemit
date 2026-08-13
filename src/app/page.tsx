@@ -34,7 +34,7 @@ import {
   calculateAssessmentReadiness, 
   OverallAssessmentResult 
 } from '@/lib/scoringEngine';
-import { FileText, Layers, ShieldCheck, CheckCircle2, FolderCog, ChevronDown } from 'lucide-react';
+import { FileText, Layers, ShieldCheck, CheckCircle2, FolderCog } from 'lucide-react';
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
@@ -153,9 +153,7 @@ export default function Home() {
     setIsAuthenticated(false);
   };
 
-  const projectReleases = React.useMemo(() => {
-    return releases.filter((r) => r.projectId === activeProject?.id);
-  }, [releases, activeProject?.id]);
+  const isManager = activeUser?.role === 'admin' || activeUser?.role === 'project_manager';
 
   return (
     <div className="min-h-screen bg-[#070A12] text-slate-100 flex flex-col font-sans">
@@ -163,79 +161,26 @@ export default function Home() {
         <AuthLoginModal onLoginSuccess={handleLoginSuccess} />
       ) : (
         <>
-          {/* Header & Role Navigation */}
+          {/* Streamlined Header with Context Selector */}
           {activeUser && (
             <RoleSwitcher 
               activeUser={activeUser} 
               onUserChange={setActiveUser} 
               onSignOut={handleSignOut} 
               availableUsers={users}
+              projects={projects}
+              releases={releases}
+              activeProject={activeProject}
+              activeRelease={activeRelease}
+              onSelectProject={setActiveProject}
+              onSelectRelease={setActiveRelease}
             />
           )}
 
           {/* Main Content Area */}
           <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
-            {/* Context Selector & Management Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-2xl border border-white/5">
-              
-              {/* Project & Release Pickers */}
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-white/10 text-xs">
-                  <span className="text-slate-400 font-medium">Project:</span>
-                  <select
-                    value={activeProject?.id || ''}
-                    onChange={(e) => {
-                      const p = projects.find((proj) => proj.id === e.target.value);
-                      if (p) {
-                        setActiveProject(p);
-                        const pRel = releases.filter((r) => r.projectId === p.id);
-                        if (pRel.length > 0) setActiveRelease(pRel[0]);
-                      }
-                    }}
-                    className="bg-transparent text-cyan-300 font-bold focus:outline-none cursor-pointer"
-                  >
-                    {projects.map((p) => (
-                      <option key={p.id} value={p.id} className="bg-slate-900 text-white">
-                        {p.projectName}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                </div>
-
-                <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-white/10 text-xs">
-                  <span className="text-slate-400 font-medium">Release Target:</span>
-                  <select
-                    value={activeRelease?.id || ''}
-                    onChange={(e) => {
-                      const r = releases.find((rel) => rel.id === e.target.value);
-                      if (r) setActiveRelease(r);
-                    }}
-                    className="bg-transparent text-emerald-400 font-bold focus:outline-none cursor-pointer"
-                  >
-                    {projectReleases.map((r) => (
-                      <option key={r.id} value={r.id} className="bg-slate-900 text-white">
-                        {r.releaseName} ({r.targetDate})
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                </div>
-              </div>
-
-              {/* Manage Projects Trigger */}
-              {activeUser && (
-                <button
-                  onClick={() => setShowProjectManager(true)}
-                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-500/40 text-xs font-semibold shadow-[0_0_15px_rgba(6,182,212,0.15)] transition"
-                >
-                  <FolderCog className="w-4 h-4 text-cyan-400" />
-                  <span>Project Governance Hub</span>
-                </button>
-              )}
-            </div>
-
-            {/* View Navigation Tabs */}
+            
+            {/* Primary Navigation Tabs */}
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex flex-wrap items-center gap-2">
                 <button
@@ -284,6 +229,14 @@ export default function Home() {
                 >
                   <FileText className="w-4 h-4" />
                   <span>Audit Report</span>
+                </button>
+
+                <button
+                  onClick={() => setShowProjectManager(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all border bg-slate-900/80 border-cyan-500/30 text-cyan-400 hover:bg-cyan-950/50 hover:border-cyan-500/60 ml-auto sm:ml-2"
+                >
+                  <FolderCog className="w-4 h-4" />
+                  <span>{isManager ? 'Manage Projects' : 'Project Directory'}</span>
                 </button>
               </div>
             </div>
@@ -367,4 +320,5 @@ export default function Home() {
     </div>
   );
 }
+
 

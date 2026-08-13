@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { UserProfile, MOCK_USERS } from '@/lib/mockData';
+import { UserProfile, MOCK_USERS, ProjectRecord, ReleaseRecord } from '@/lib/mockData';
+import { ProjectContextPicker } from '@/components/ProjectContextPicker';
 import { ShieldCheck, UserCheck, ChevronDown, CheckCircle2, LogOut } from 'lucide-react';
 
 interface RoleSwitcherProps {
@@ -9,13 +10,25 @@ interface RoleSwitcherProps {
   onUserChange: (user: UserProfile) => void;
   onSignOut?: () => void;
   availableUsers?: UserProfile[];
+  projects?: ProjectRecord[];
+  releases?: ReleaseRecord[];
+  activeProject?: ProjectRecord | null;
+  activeRelease?: ReleaseRecord | null;
+  onSelectProject?: (project: ProjectRecord) => void;
+  onSelectRelease?: (release: ReleaseRecord) => void;
 }
 
 export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ 
   activeUser, 
   onUserChange, 
   onSignOut,
-  availableUsers = MOCK_USERS 
+  availableUsers = MOCK_USERS,
+  projects = [],
+  releases = [],
+  activeProject = null,
+  activeRelease = null,
+  onSelectProject,
+  onSelectRelease
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
@@ -48,21 +61,37 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#070A12]/85 backdrop-blur-2xl px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#070A12]/90 backdrop-blur-2xl px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
       {/* Brand & System Title */}
-      <div className="flex items-center gap-3.5">
-        <div className="p-2.5 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 border border-cyan-500/40 text-cyan-400 glow-cyan">
-          <ShieldCheck className="w-6 h-6" />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold tracking-tight text-white font-display">GoLive DSS</h1>
-            <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-md bg-cyan-950/90 text-cyan-400 border border-cyan-700/60 font-semibold">
-              v1.0-PROD
-            </span>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 border border-cyan-500/40 text-cyan-400 glow-cyan">
+            <ShieldCheck className="w-5 h-5" />
           </div>
-          <p className="text-xs text-slate-400 font-medium">Risk-Based Release Readiness Decision Support</p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold tracking-tight text-white font-display">GoLive DSS</h1>
+              <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-cyan-950/90 text-cyan-400 border border-cyan-700/60 font-semibold">
+                v1.0-PROD
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-medium hidden sm:block">Release Readiness Decision Support</p>
+          </div>
         </div>
+
+        {/* Project Context Picker Widget */}
+        {onSelectProject && onSelectRelease && (
+          <div className="pl-4 border-l border-white/10">
+            <ProjectContextPicker
+              projects={projects}
+              releases={releases}
+              activeProject={activeProject}
+              activeRelease={activeRelease}
+              onSelectProject={onSelectProject}
+              onSelectRelease={onSelectRelease}
+            />
+          </div>
+        )}
       </div>
 
       {/* Persona Switcher & Session Controls */}
@@ -70,19 +99,19 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
         <div className="relative">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-slate-900/90 border border-slate-700/80 hover:border-cyan-500/60 transition-all text-left cursor-pointer shadow-lg"
+            className="flex items-center gap-3 px-3.5 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80 hover:border-cyan-500/60 transition-all text-left cursor-pointer shadow-md"
           >
-            <div className="p-1.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+            <div className="p-1 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
               <UserCheck className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-[10px] uppercase tracking-wider text-slate-400 flex items-center gap-1.5 font-semibold">
+              <div className="text-[9px] uppercase tracking-wider text-slate-400 flex items-center gap-1 font-semibold">
                 <span>Persona:</span>
-                <span className={`px-2 py-0.2 rounded border font-mono font-bold ${getRoleBadgeStyle(activeUser.role)}`}>
+                <span className={`px-1.5 py-0.1 rounded border font-mono font-bold text-[9px] ${getRoleBadgeStyle(activeUser.role)}`}>
                   {getRoleLabel(activeUser.role)}
                 </span>
               </div>
-              <div className="text-xs font-bold text-white flex items-center justify-between gap-3 font-sans">
+              <div className="text-xs font-bold text-white flex items-center justify-between gap-2 font-sans">
                 <span>{activeUser.name}</span>
                 <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
               </div>
@@ -133,12 +162,13 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
           <button
             onClick={onSignOut}
             title="Sign Out Session"
-            className="p-2.5 rounded-2xl bg-slate-900 hover:bg-rose-950/80 hover:text-rose-400 border border-slate-700 hover:border-rose-700/60 text-slate-400 transition-all cursor-pointer shadow-lg"
+            className="p-2 rounded-xl bg-slate-900 hover:bg-rose-950/80 hover:text-rose-400 border border-slate-700 hover:border-rose-700/60 text-slate-400 transition-all cursor-pointer shadow-md"
           >
-            <LogOut className="w-4.5 h-4.5" />
+            <LogOut className="w-4 h-4" />
           </button>
         )}
       </div>
     </header>
   );
 };
+
