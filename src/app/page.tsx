@@ -268,7 +268,7 @@ export default function Home() {
           <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
             
             {/* Project Governance Controls Sub-header */}
-            <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-cyan-950/40 border border-white/10 shadow-lg">
+            <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-cyan-950/40 border border-white/10 shadow-lg print:hidden">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
                   <FolderCog className="w-5 h-5" />
@@ -291,7 +291,8 @@ export default function Home() {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 print:hidden">
+
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setActiveModal('dashboard')}

@@ -61,7 +61,8 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#070A12]/90 backdrop-blur-2xl px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#070A12]/90 backdrop-blur-2xl px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4 print:hidden">
+
       {/* Brand & System Title */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-3">
