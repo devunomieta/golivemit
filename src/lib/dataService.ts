@@ -348,6 +348,7 @@ export async function createProject(project: Omit<ProjectRecord, 'id'>, userId?:
       .from('projects')
       .insert([
         {
+          id: newId,
           project_name: project.projectName,
           department: project.department,
           description: project.description,
@@ -358,33 +359,43 @@ export async function createProject(project: Omit<ProjectRecord, 'id'>, userId?:
       .single();
 
     if (error || !data) {
+      console.warn('Supabase createProject insert fallback:', error);
       MOCK_PROJECTS_STORE.unshift(newProject);
       return newProject;
     }
 
-    if (userId) {
-      await supabase.from('audit_logs').insert([
-        {
-          user_id: userId,
-          action: 'CREATE_PROJECT',
-          affected_table: 'projects',
-          details: JSON.stringify({ projectId: data.id, projectName: data.project_name }),
-        },
-      ]);
-    }
-
-    return {
+    const createdRecord: ProjectRecord = {
       id: data.id,
       projectName: data.project_name,
       department: data.department,
       description: data.description || '',
       ownerName: data.owner_name,
     };
-  } catch {
+    MOCK_PROJECTS_STORE.unshift(createdRecord);
+
+    if (userId) {
+      try {
+        await supabase.from('audit_logs').insert([
+          {
+            user_id: userId,
+            action: 'CREATE_PROJECT',
+            affected_table: 'projects',
+            details: JSON.stringify({ projectId: data.id, projectName: data.project_name }),
+          },
+        ]);
+      } catch {
+        // Ignore audit log non-critical failures
+      }
+    }
+
+    return createdRecord;
+  } catch (err) {
+    console.error('createProject Exception:', err);
     MOCK_PROJECTS_STORE.unshift(newProject);
     return newProject;
   }
 }
+
 
 export async function updateProject(id: string, updates: Partial<ProjectRecord>, userId?: string): Promise<boolean> {
   // Update mock store
