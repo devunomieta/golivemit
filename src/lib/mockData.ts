@@ -58,6 +58,8 @@ export interface ApprovalRecord {
   evidenceFileData?: string;
   signatureStamp?: string;
   digitalSignatureName?: string;
+  blockHash?: string;
+  previousHash?: string;
   conditionsText?: string;
   conditionsOwner?: string;
   dueDate?: string;

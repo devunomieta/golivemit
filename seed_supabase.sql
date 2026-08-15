@@ -103,6 +103,8 @@ CREATE TABLE public.approvals (
   evidence_file_data TEXT,
   signature_stamp TEXT,
   digital_signature_name TEXT,
+  block_hash TEXT,
+  previous_hash TEXT,
   conditions_text TEXT,
   conditions_owner TEXT,
   due_date TEXT,

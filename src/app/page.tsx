@@ -9,6 +9,9 @@ import { ApprovalWorkflow } from '@/components/ApprovalWorkflow';
 import { AuditReport } from '@/components/AuditReport';
 import { AuthLoginModal } from '@/components/AuthLoginModal';
 import { ProjectManager } from '@/components/ProjectManager';
+import { CryptographicVerifierModal } from '@/components/CryptographicVerifierModal';
+import { calculateAIRiskAnalysis } from '@/lib/aiRiskEngine';
+import { verifyLedgerIntegrity, CryptographicBlock } from '@/lib/cryptoLedger';
 import { 
   UserProfile, 
   ReadinessDomain, 
@@ -106,8 +109,19 @@ export default function Home() {
     return INITIAL_RELEASES[0];
   });
 
-  const [activeModal, setActiveModal] = React.useState<'dashboard' | 'assessment' | 'approval' | 'report'>('dashboard');
+  const [activeModal, setActiveModal] = React.useState<'dashboard' | 'assessment' | 'approval' | 'report' | 'crypto'>('dashboard');
   const [showProjectManager, setShowProjectManager] = React.useState(false);
+
+  // Cryptographic Ledger Verification State
+  const [ledgerState, setLedgerState] = React.useState<{
+    isChainValid: boolean;
+    tamperedIndex: number | null;
+    blocks: CryptographicBlock[];
+  }>({ isChainValid: true, tamperedIndex: null, blocks: [] });
+
+  React.useEffect(() => {
+    verifyLedgerIntegrity(approvals, activeRelease?.id || 'rel-1').then(setLedgerState);
+  }, [approvals, activeRelease?.id]);
   const [switchingState, setSwitchingState] = React.useState<{
     type: 'persona' | 'project' | 'release' | null;
     targetName?: string;
@@ -237,6 +251,11 @@ export default function Home() {
     return calculateAssessmentReadiness(domains, criteria, responses);
   }, [domains, criteria, responses]);
 
+  // Compute AI Risk Analysis & Mitigation Recommendations
+  const aiAnalysis = React.useMemo(() => {
+    return calculateAIRiskAnalysis(assessmentResult, criteria, responses);
+  }, [assessmentResult, criteria, responses]);
+
   // Timestamp tracking for Post Sign-Off Modification warning
   const [lastResponseUpdateAt, setLastResponseUpdateAt] = React.useState<number>(0);
   const [lastApprovalVoteAt, setLastApprovalVoteAt] = React.useState<number>(0);
@@ -272,6 +291,8 @@ export default function Home() {
     evidenceFileData?: string,
     signatureStamp?: string,
     digitalSignatureName?: string,
+    blockHash?: string,
+    previousHash?: string,
     conditionsText?: string,
     conditionsOwner?: string,
     dueDate?: string
@@ -288,6 +309,8 @@ export default function Home() {
       evidenceFileData,
       signatureStamp,
       digitalSignatureName,
+      blockHash,
+      previousHash,
       conditionsText,
       conditionsOwner,
       dueDate,
@@ -307,6 +330,8 @@ export default function Home() {
         evidenceFileData,
         signatureStamp,
         digitalSignatureName,
+        blockHash,
+        previousHash,
         conditionsText,
         conditionsOwner,
         dueDate
@@ -447,8 +472,10 @@ export default function Home() {
                 targetDate={activeRelease?.targetDate || ''}
                 hasApprovals={approvals.length > 0}
                 isPostSignoffModified={isPostSignoffModified}
+                aiAnalysis={aiAnalysis}
                 onOpenAssessment={() => setActiveModal('assessment')}
                 onOpenApproval={() => setActiveModal('approval')}
+                onOpenCryptoVerifier={() => setActiveModal('crypto')}
               />
             )}
 
@@ -483,6 +510,8 @@ export default function Home() {
                     rec.evidenceFileData,
                     rec.signatureStamp,
                     rec.digitalSignatureName,
+                    rec.blockHash,
+                    rec.previousHash,
                     rec.conditionsText,
                     rec.conditionsOwner,
                     rec.dueDate
@@ -501,6 +530,15 @@ export default function Home() {
                 criteria={criteria}
                 responses={responses}
                 approvals={approvals}
+                onClose={() => setActiveModal('dashboard')}
+              />
+            )}
+
+            {activeModal === 'crypto' && (
+              <CryptographicVerifierModal
+                blocks={ledgerState.blocks}
+                isChainValid={ledgerState.isChainValid}
+                tamperedIndex={ledgerState.tamperedIndex}
                 onClose={() => setActiveModal('dashboard')}
               />
             )}

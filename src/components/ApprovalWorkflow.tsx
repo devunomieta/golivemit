@@ -3,6 +3,7 @@
 import React from 'react';
 import { OverallAssessmentResult, UserRole } from '@/lib/scoringEngine';
 import { ApprovalRecord, UserProfile } from '@/lib/mockData';
+import { createApprovalBlockHash } from '@/lib/cryptoLedger';
 import { 
   FileCheck2, 
   CheckCircle2, 
@@ -129,21 +130,32 @@ export const ApprovalWorkflow: React.FC<ApprovalWorkflowProps> = ({
     const stampHash = Math.random().toString(36).substring(2, 8).toUpperCase();
     const generatedStamp = `SIG-2026-${stampHash}-${decision}`;
 
-    onSubmitApproval({
-      assessmentId: 'a1',
-      approverName: userName,
-      decision,
-      comments: comments.trim() || undefined,
-      evidenceUrl: evidenceUrl.trim() || undefined,
-      evidenceFileName: evidenceFile?.name,
-      evidenceFileData: evidenceFile?.data,
-      signatureStamp: generatedStamp,
-      digitalSignatureName: digitalSignatureName.trim(),
-      conditionsText: decision === 'CONDITIONAL_GO' ? conditionsText : undefined,
-      conditionsOwner: decision === 'CONDITIONAL_GO' ? finalOwner : undefined,
-      dueDate: decision === 'CONDITIONAL_GO' ? dueDate : undefined,
+    const prevHash = approvals.length > 0 && approvals[0].blockHash 
+      ? approvals[0].blockHash 
+      : '0000000000000000000000000000000000000000000000000000000000000000';
+
+    const index = approvals.length;
+    const createdAt = new Date().toISOString();
+
+    createApprovalBlockHash(index, 'rel-1', userName, decision, createdAt, prevHash).then((computedHash) => {
+      onSubmitApproval({
+        assessmentId: 'a1',
+        approverName: userName,
+        decision,
+        comments: comments.trim() || undefined,
+        evidenceUrl: evidenceUrl.trim() || undefined,
+        evidenceFileName: evidenceFile?.name,
+        evidenceFileData: evidenceFile?.data,
+        signatureStamp: generatedStamp,
+        digitalSignatureName: digitalSignatureName.trim(),
+        blockHash: computedHash,
+        previousHash: prevHash,
+        conditionsText: decision === 'CONDITIONAL_GO' ? conditionsText : undefined,
+        conditionsOwner: decision === 'CONDITIONAL_GO' ? finalOwner : undefined,
+        dueDate: decision === 'CONDITIONAL_GO' ? dueDate : undefined,
+      });
+      setSubmitted(true);
     });
-    setSubmitted(true);
   };
 
   return (

@@ -1,7 +1,7 @@
-'use client';
-
 import React from 'react';
 import { OverallAssessmentResult } from '@/lib/scoringEngine';
+import { AIRiskAnalysis } from '@/lib/aiRiskEngine';
+import { AIRiskInsightsWidget } from './AIRiskInsightsWidget';
 import { 
   CheckCircle2, 
   AlertTriangle, 
@@ -11,7 +11,8 @@ import {
   FileCheck2,
   TrendingUp,
   Activity,
-  AlertOctagon
+  AlertOctagon,
+  ShieldCheck
 } from 'lucide-react';
 import { 
   RadarChart, 
@@ -30,8 +31,10 @@ interface ExecutiveDashboardProps {
   targetDate: string;
   hasApprovals?: boolean;
   isPostSignoffModified?: boolean;
+  aiAnalysis?: AIRiskAnalysis;
   onOpenAssessment: () => void;
   onOpenApproval: () => void;
+  onOpenCryptoVerifier?: () => void;
 }
 
 export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
@@ -41,8 +44,10 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   targetDate,
   hasApprovals = false,
   isPostSignoffModified = false,
+  aiAnalysis,
   onOpenAssessment,
   onOpenApproval,
+  onOpenCryptoVerifier,
 }) => {
   const { overallScore, recommendation, hasGateBlocker, activeBlockers, domainBreakdown } = assessmentResult;
 
@@ -121,6 +126,15 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
         </div>
 
         <div className="flex items-center gap-3.5">
+          {onOpenCryptoVerifier && (
+            <button
+              onClick={onOpenCryptoVerifier}
+              className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 font-semibold text-xs transition-all border border-cyan-500/40 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+            >
+              <ShieldCheck className="w-4 h-4 text-cyan-400" />
+              <span>SHA-256 Ledger Proof</span>
+            </button>
+          )}
           <button
             onClick={onOpenAssessment}
             className="flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition-all border border-slate-700 cursor-pointer shadow-lg"
@@ -226,6 +240,14 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Module 3: AI Risk Prediction & Mitigation Widget */}
+      {aiAnalysis && (
+        <AIRiskInsightsWidget 
+          analysis={aiAnalysis} 
+          onApplyMitigation={() => onOpenApproval()}
+        />
+      )}
 
       {/* Domain Breakdown Matrix Table */}
       <div className="p-7 rounded-3xl glass-panel border border-white/10 space-y-4">
