@@ -194,8 +194,15 @@ INSERT INTO public.readiness_criteria (id, domain_id, criterion_text, weight, as
   ('c11', 'd6', 'Tier-1 & Tier-2 Support teams trained on new features and escalation runbooks.', 5, 'project_manager', false),
   ('c12', 'd6', 'End-user release notes and help center documentation published.', 3, 'business', false),
   ('c13', 'd8', 'NDPA & GDPR data privacy compliance checklist signed off by Legal counsel.', 5, 'admin', true),
-  ('c14', 'd10', 'Change Advisory Board (CAB) approval received and change ticket logged.', 10, 'approver', true)
-ON CONFLICT (id) DO NOTHING;
+  ('c14', 'd10', 'Change Advisory Board (CAB) approval received and change ticket logged.', 10, 'approver', true),
+  ('c15', 'd7', 'Data pipeline migration & analytics tracking verification completed.', 8, 'developer', false),
+  ('c16', 'd9', 'APM telemetry dashboard, error logging & alerting threshold rules configured.', 10, 'devops', true)
+ON CONFLICT (id) DO UPDATE SET
+  domain_id = EXCLUDED.domain_id,
+  criterion_text = EXCLUDED.criterion_text,
+  weight = EXCLUDED.weight,
+  assigned_role = EXCLUDED.assigned_role,
+  gate_rule_flag = EXCLUDED.gate_rule_flag;
 
 INSERT INTO public.projects (id, project_name, department, description, owner_name) VALUES
   ('p1', 'Core Banking API Modernization', 'Fintech Engineering', 'Modernizing core transaction APIs to microservices architecture.', 'David Okonjo'),

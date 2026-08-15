@@ -108,6 +108,8 @@ export const INITIAL_CRITERIA: ReadinessCriterion[] = [
   { id: 'c12', domainId: 'd8', criterionText: 'End-User Training & Change Communication Released', weight: 10, assignedRole: 'business', gateRuleFlag: false },
   { id: 'c13', domainId: 'd9', criterionText: 'Nigeria Data Protection Act (NDPA 2023) Compliance Audit Sign-off', weight: 10, assignedRole: 'security', gateRuleFlag: false },
   { id: 'c14', domainId: 'd10', criterionText: 'System Operations Guide & Release Notes Exported', weight: 10, assignedRole: 'developer', gateRuleFlag: false },
+  { id: 'c15', domainId: 'd5', criterionText: 'Data pipeline migration & analytics tracking verification completed', weight: 8, assignedRole: 'developer', gateRuleFlag: false },
+  { id: 'c16', domainId: 'd7', criterionText: 'APM telemetry dashboard, error logging & alerting threshold rules configured', weight: 10, assignedRole: 'devops', gateRuleFlag: true },
 ];
 
 export const INITIAL_PROJECTS: ProjectRecord[] = [
