@@ -12,31 +12,31 @@ import { ProjectManager } from '@/components/ProjectManager';
 import { CryptographicVerifierModal } from '@/components/CryptographicVerifierModal';
 import { calculateAIRiskAnalysis } from '@/lib/aiRiskEngine';
 import { verifyLedgerIntegrity, CryptographicBlock } from '@/lib/cryptoLedger';
-import { 
-  UserProfile, 
-  ReadinessDomain, 
-  ReadinessCriterion, 
-  CriterionResponse, 
-  INITIAL_PROJECTS, 
+import {
+  UserProfile,
+  ReadinessDomain,
+  ReadinessCriterion,
+  CriterionResponse,
+  INITIAL_PROJECTS,
   INITIAL_RELEASES,
   ApprovalRecord,
   ProjectRecord,
   ReleaseRecord
 } from '@/lib/mockData';
-import { 
-  fetchProfiles, 
-  fetchDomains, 
-  fetchCriteria, 
-  fetchAssessmentResponses, 
-  saveAssessmentResponse, 
-  fetchApprovals, 
+import {
+  fetchProfiles,
+  fetchDomains,
+  fetchCriteria,
+  fetchAssessmentResponses,
+  saveAssessmentResponse,
+  fetchApprovals,
   submitApprovalVote,
   fetchProjects,
   fetchReleases
 } from '@/lib/dataService';
-import { 
-  calculateAssessmentReadiness, 
-  OverallAssessmentResult 
+import {
+  calculateAssessmentReadiness,
+  OverallAssessmentResult
 } from '@/lib/scoringEngine';
 import { FileText, Layers, ShieldCheck, CheckCircle2, FolderCog } from 'lucide-react';
 
@@ -82,11 +82,11 @@ export default function Home() {
       localStorage.removeItem('golive_active_user_id');
     }
   };
-  
+
   // Project & Release State with LocalStorage Initialization
   const [projects, setProjects] = React.useState<ProjectRecord[]>(INITIAL_PROJECTS);
   const [releases, setReleases] = React.useState<ReleaseRecord[]>(INITIAL_RELEASES);
-  
+
   const [activeProject, setActiveProject] = React.useState<ProjectRecord>(() => {
     if (typeof window !== 'undefined') {
       const savedProjId = localStorage.getItem('golive_active_project_id');
@@ -219,7 +219,7 @@ export default function Home() {
   React.useEffect(() => {
     async function loadReleaseDetails() {
       if (!activeRelease) return;
-      
+
       // First check local storage override for this release
       if (typeof window !== 'undefined') {
         const saved = localStorage.getItem(`golive_responses_${activeRelease.id}`);
@@ -355,22 +355,22 @@ export default function Home() {
       ) : isLoadingData ? (
         <div className="flex-1 flex flex-col items-center justify-center space-y-4 min-h-[80vh]">
           <div className="w-12 h-12 rounded-full border-4 border-cyan-500/20 border-t-cyan-400 animate-spin glow-cyan" />
-          <p className="text-xs font-semibold text-cyan-300 font-mono tracking-widest uppercase">Hydrating Enterprise Governance State...</p>
+          <p className="text-xs font-semibold text-cyan-300 font-mono tracking-widest uppercase">Loading GoLiveDSS...</p>
         </div>
       ) : (
         <>
           {/* Dynamic Switch Visual Loading Feedback Overlay */}
-          <LoadingOverlay 
-            type={switchingState.type} 
-            targetName={switchingState.targetName} 
+          <LoadingOverlay
+            type={switchingState.type}
+            targetName={switchingState.targetName}
           />
 
           {/* Streamlined Header with Context Selector */}
           {activeUser && (
-            <RoleSwitcher 
-              activeUser={activeUser} 
-              onUserChange={handleUserChange} 
-              onSignOut={handleLogout} 
+            <RoleSwitcher
+              activeUser={activeUser}
+              onUserChange={handleUserChange}
+              onSignOut={handleLogout}
               availableUsers={users}
               projects={projects}
               releases={releases}
@@ -385,7 +385,7 @@ export default function Home() {
 
           {/* Main Content Area */}
           <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
-            
+
             {/* Project Governance Controls Sub-header */}
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-cyan-950/40 border border-white/10 shadow-lg print:hidden">
               <div className="flex items-center gap-3">
@@ -415,11 +415,10 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setActiveModal('dashboard')}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
-                    activeModal === 'dashboard'
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${activeModal === 'dashboard'
                       ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 glow-cyan'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-                  }`}
+                    }`}
                 >
                   <Layers className="w-4 h-4" />
                   <span>Executive Dashboard</span>
@@ -427,11 +426,10 @@ export default function Home() {
 
                 <button
                   onClick={() => setActiveModal('assessment')}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
-                    activeModal === 'assessment'
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${activeModal === 'assessment'
                       ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 glow-cyan'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-                  }`}
+                    }`}
                 >
                   <FileText className="w-4 h-4" />
                   <span>Assessment Form</span>
@@ -439,11 +437,10 @@ export default function Home() {
 
                 <button
                   onClick={() => setActiveModal('approval')}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
-                    activeModal === 'approval'
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${activeModal === 'approval'
                       ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 glow-cyan'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-                  }`}
+                    }`}
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Governance Board</span>
@@ -451,11 +448,10 @@ export default function Home() {
 
                 <button
                   onClick={() => setActiveModal('report')}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
-                    activeModal === 'report'
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${activeModal === 'report'
                       ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 glow-cyan'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-                  }`}
+                    }`}
                 >
                   <ShieldCheck className="w-4 h-4" />
                   <span>Audit Report</span>
