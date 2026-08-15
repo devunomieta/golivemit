@@ -76,10 +76,49 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
   onSaveResponse,
   onClose,
 }) => {
-  const [selectedDomainId, setSelectedDomainId] = React.useState<string>(domains[0]?.id || '');
+  const isManager = userRole === 'admin' || userRole === 'project_manager';
+
   const [prevResponsesProp, setPrevResponsesProp] = React.useState(responses);
   const [localResponses, setLocalResponses] = React.useState<Record<string, CriterionResponse>>(responses);
   const [savedNotice, setSavedNotice] = React.useState(false);
+
+  // 2-Tier Sorted Domains: Assigned to active persona first (A-Z), then unassigned (A-Z)
+  const sortedDomains = React.useMemo(() => {
+    return [...domains].sort((a, b) => {
+      const aCriteria = criteria.filter((c) => c.domainId === a.id);
+      const bCriteria = criteria.filter((c) => c.domainId === b.id);
+
+      const aHasAssigned = aCriteria.some((c) => {
+        const resp = localResponses[c.id];
+        const assignedRole = resp?.assignedRoleOverride || c.assignedRole;
+        const assignedUserId = resp?.assignedUserId;
+        return (assignedRole === userRole && userRole !== 'admin') || (assignedUserId && assignedUserId === userName);
+      });
+
+      const bHasAssigned = bCriteria.some((c) => {
+        const resp = localResponses[c.id];
+        const assignedRole = resp?.assignedRoleOverride || c.assignedRole;
+        const assignedUserId = resp?.assignedUserId;
+        return (assignedRole === userRole && userRole !== 'admin') || (assignedUserId && assignedUserId === userName);
+      });
+
+      if (aHasAssigned && !bHasAssigned) return -1;
+      if (!aHasAssigned && bHasAssigned) return 1;
+      return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    });
+  }, [domains, criteria, localResponses, userRole, userName]);
+
+  const [rawSelectedDomainId, setSelectedDomainId] = React.useState<string>('');
+
+  // Fallback to top assigned domain if current selection is invalid or uninitialized
+  const activeSelectedDomainId = React.useMemo(() => {
+    if (rawSelectedDomainId && sortedDomains.some((d) => d.id === rawSelectedDomainId)) {
+      return rawSelectedDomainId;
+    }
+    return sortedDomains[0]?.id || domains[0]?.id || '';
+  }, [rawSelectedDomainId, sortedDomains, domains]);
+
+  const selectedDomainId = activeSelectedDomainId;
 
   // Validation Error State per Criterion ID
   const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
@@ -103,10 +142,8 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
     setLocalResponses(responses);
   }
 
-  const selectedDomain = domains.find((d) => d.id === selectedDomainId) || domains[0];
-  const domainCriteria = criteria.filter((c) => c.domainId === selectedDomainId);
-
-  const isManager = userRole === 'admin' || userRole === 'project_manager';
+  const selectedDomain = sortedDomains.find((d) => d.id === selectedDomainId) || sortedDomains[0] || domains[0];
+  const domainCriteria = criteria.filter((c) => c.domainId === selectedDomain?.id);
 
   const handleSliderChange = (criterionId: string, field: 'likelihood' | 'impact', value: number) => {
     const current = localResponses[criterionId] || {
@@ -467,7 +504,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
 
       {/* Domain Navigation Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
-        {domains.map((domain) => {
+        {sortedDomains.map((domain) => {
           const isSelected = domain.id === selectedDomainId;
           return (
             <button
