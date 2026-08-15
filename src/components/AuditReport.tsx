@@ -150,7 +150,9 @@ export const AuditReport: React.FC<AuditReportProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 print:divide-gray-200">
-              {domainBreakdown.map((d) => (
+              {[...domainBreakdown]
+                .sort((a, b) => a.domainName.localeCompare(b.domainName))
+                .map((d) => (
                 <tr key={d.domainId}>
                   <td className="p-2.5 font-medium">{d.domainName}</td>
                   <td className="p-2.5 font-mono">{d.weight}%</td>

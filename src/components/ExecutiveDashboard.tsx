@@ -264,7 +264,9 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 font-sans">
-              {domainBreakdown.map((domain) => (
+              {[...domainBreakdown]
+                .sort((a, b) => a.domainName.localeCompare(b.domainName))
+                .map((domain) => (
                 <tr key={domain.domainId} className="hover:bg-slate-800/50 transition-colors">
                   <td className="p-4 font-semibold text-white">{domain.domainName}</td>
                   <td className="p-4 font-mono text-slate-400 font-medium">{domain.weight}%</td>
