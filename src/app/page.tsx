@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { RoleSwitcher } from '@/components/RoleSwitcher';
+import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { ExecutiveDashboard } from '@/components/ExecutiveDashboard';
 import { AssessmentWizard } from '@/components/AssessmentWizard';
 import { ApprovalWorkflow } from '@/components/ApprovalWorkflow';
@@ -73,20 +74,47 @@ export default function Home() {
 
   const [activeModal, setActiveModal] = React.useState<'dashboard' | 'assessment' | 'approval' | 'report'>('dashboard');
   const [showProjectManager, setShowProjectManager] = React.useState(false);
+  const [switchingState, setSwitchingState] = React.useState<{
+    type: 'persona' | 'project' | 'release' | null;
+    targetName?: string;
+  }>({ type: null });
+
+  const triggerSwitchFeedback = (type: 'persona' | 'project' | 'release', targetName: string, callback: () => void) => {
+    setSwitchingState({ type, targetName });
+    setTimeout(() => {
+      callback();
+      setTimeout(() => {
+        setSwitchingState({ type: null });
+      }, 400);
+    }, 100);
+  };
+
+  const handleUserChange = (newUser: UserProfile) => {
+    if (newUser.id === activeUser?.id) return;
+    triggerSwitchFeedback('persona', newUser.name, () => {
+      setActiveUser(newUser);
+    });
+  };
 
   // Persist Active Project & Release Selections
   const handleSelectProject = (proj: ProjectRecord) => {
-    setActiveProject(proj);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('golive_active_project_id', proj.id);
-    }
+    if (proj.id === activeProject?.id) return;
+    triggerSwitchFeedback('project', proj.projectName, () => {
+      setActiveProject(proj);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('golive_active_project_id', proj.id);
+      }
+    });
   };
 
   const handleSelectRelease = (rel: ReleaseRecord) => {
-    setActiveRelease(rel);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('golive_active_release_id', rel.id);
-    }
+    if (rel.id === activeRelease?.id) return;
+    triggerSwitchFeedback('release', rel.releaseName, () => {
+      setActiveRelease(rel);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('golive_active_release_id', rel.id);
+      }
+    });
   };
 
   const [isLoadingData, setIsLoadingData] = React.useState(true);
@@ -246,11 +274,17 @@ export default function Home() {
         </div>
       ) : (
         <>
+          {/* Dynamic Switch Visual Loading Feedback Overlay */}
+          <LoadingOverlay 
+            type={switchingState.type} 
+            targetName={switchingState.targetName} 
+          />
+
           {/* Streamlined Header with Context Selector */}
           {activeUser && (
             <RoleSwitcher 
               activeUser={activeUser} 
-              onUserChange={setActiveUser} 
+              onUserChange={handleUserChange} 
               onSignOut={handleSignOut} 
               availableUsers={users}
               projects={projects}
