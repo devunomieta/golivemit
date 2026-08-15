@@ -3,7 +3,8 @@
 import React from 'react';
 import { OverallAssessmentResult } from '@/lib/scoringEngine';
 import { ReadinessCriterion, CriterionResponse } from '@/lib/scoringEngine';
-import { Printer, CheckCircle2, AlertTriangle, XCircle, ShieldCheck } from 'lucide-react';
+import { ApprovalRecord } from '@/lib/mockData';
+import { Printer, CheckCircle2, AlertTriangle, XCircle, ShieldCheck, FileCheck2 } from 'lucide-react';
 
 interface AuditReportProps {
   projectName: string;
@@ -12,6 +13,7 @@ interface AuditReportProps {
   assessmentResult: OverallAssessmentResult;
   criteria: ReadinessCriterion[];
   responses: Record<string, CriterionResponse>;
+  approvals?: ApprovalRecord[];
   onClose: () => void;
 }
 
@@ -22,9 +24,11 @@ export const AuditReport: React.FC<AuditReportProps> = ({
   assessmentResult,
   criteria,
   responses,
+  approvals = [],
   onClose,
 }) => {
   const { overallScore, recommendation, hasGateBlocker, activeBlockers, domainBreakdown } = assessmentResult;
+  const latestApproval = approvals[0];
 
   const handlePrint = () => {
     window.print();
@@ -196,15 +200,40 @@ export const AuditReport: React.FC<AuditReportProps> = ({
           </div>
         </div>
 
-        {/* Sign-off Signature Footer */}
-        <div className="pt-8 border-t border-white/10 print:border-gray-300 grid grid-cols-2 gap-8 text-xs text-gray-400 print:text-gray-700">
-          <div>
-            <div className="border-b border-gray-600 print:border-black h-8"></div>
-            <div className="pt-1 font-semibold">Lead Approver Signature</div>
+        {/* Sign-off Signature & Board Authorization Footer */}
+        <div className="pt-8 border-t border-white/10 print:border-gray-300 space-y-4">
+          <div className="text-xs font-bold text-white print:text-black uppercase tracking-wider font-['Outfit']">
+            Formal Release Governance Sign-Off & Board Authorization
           </div>
-          <div>
-            <div className="border-b border-gray-600 print:border-black h-8"></div>
-            <div className="pt-1 font-semibold">Date & Board Authorization</div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-xl bg-gray-900/80 print:bg-gray-100 border border-white/10 print:border-gray-300">
+            <div className="space-y-1 text-xs">
+              <div className="text-gray-400 print:text-gray-600 uppercase text-[10px] font-mono">Lead Approver Signature</div>
+              <div className="font-bold text-white print:text-black text-sm">
+                {latestApproval?.digitalSignatureName || latestApproval?.approverName || 'Pending Board Sign-off'}
+              </div>
+              {latestApproval?.signatureStamp ? (
+                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-cyan-950 print:bg-cyan-100 text-cyan-400 print:text-cyan-800 text-[10px] font-mono border border-cyan-800/50 print:border-cyan-300">
+                  <FileCheck2 className="w-3 h-3" />
+                  <span>Verified Stamp: {latestApproval.signatureStamp}</span>
+                </div>
+              ) : (
+                <div className="text-[10px] text-amber-400 print:text-amber-700 italic font-mono">
+                  Digital Cryptographic Stamp: PENDING AUTHORIZATION
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-1 text-xs">
+              <div className="text-gray-400 print:text-gray-600 uppercase text-[10px] font-mono">Authorization & Date</div>
+              <div className="font-bold text-white print:text-black">
+                {latestApproval?.createdAt ? new Date(latestApproval.createdAt).toLocaleString() : new Date().toLocaleDateString()}
+              </div>
+              <div className="text-[11px] text-emerald-400 print:text-emerald-800 font-semibold flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Authorized by Enterprise Release Governance Board</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

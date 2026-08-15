@@ -270,6 +270,8 @@ export default function Home() {
     evidenceUrl?: string,
     evidenceFileName?: string,
     evidenceFileData?: string,
+    signatureStamp?: string,
+    digitalSignatureName?: string,
     conditionsText?: string,
     conditionsOwner?: string,
     dueDate?: string
@@ -284,6 +286,8 @@ export default function Home() {
       evidenceUrl,
       evidenceFileName,
       evidenceFileData,
+      signatureStamp,
+      digitalSignatureName,
       conditionsText,
       conditionsOwner,
       dueDate,
@@ -301,6 +305,8 @@ export default function Home() {
         evidenceUrl,
         evidenceFileName,
         evidenceFileData,
+        signatureStamp,
+        digitalSignatureName,
         conditionsText,
         conditionsOwner,
         dueDate
@@ -475,6 +481,8 @@ export default function Home() {
                     rec.evidenceUrl,
                     rec.evidenceFileName,
                     rec.evidenceFileData,
+                    rec.signatureStamp,
+                    rec.digitalSignatureName,
                     rec.conditionsText,
                     rec.conditionsOwner,
                     rec.dueDate
@@ -492,6 +500,7 @@ export default function Home() {
                 assessmentResult={assessmentResult}
                 criteria={criteria}
                 responses={responses}
+                approvals={approvals}
                 onClose={() => setActiveModal('dashboard')}
               />
             )}

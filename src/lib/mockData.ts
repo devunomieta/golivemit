@@ -56,6 +56,8 @@ export interface ApprovalRecord {
   evidenceUrl?: string;
   evidenceFileName?: string;
   evidenceFileData?: string;
+  signatureStamp?: string;
+  digitalSignatureName?: string;
   conditionsText?: string;
   conditionsOwner?: string;
   dueDate?: string;

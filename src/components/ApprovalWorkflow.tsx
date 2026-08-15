@@ -9,6 +9,7 @@ import {
   AlertTriangle, 
   XCircle, 
   ShieldAlert, 
+  ShieldCheck,
   Calendar, 
   User,
   AlertOctagon,
@@ -57,6 +58,7 @@ export const ApprovalWorkflow: React.FC<ApprovalWorkflowProps> = ({
   const [customOwnerRole, setCustomOwnerRole] = React.useState('');
   const [customOwnerEmail, setCustomOwnerEmail] = React.useState('');
 
+  const [digitalSignatureName, setDigitalSignatureName] = React.useState(userName);
   const [dueDate, setDueDate] = React.useState('2026-08-30');
   const [submitted, setSubmitted] = React.useState(false);
   const [formError, setFormError] = React.useState<string | null>(null);
@@ -86,6 +88,11 @@ export const ApprovalWorkflow: React.FC<ApprovalWorkflowProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+
+    if (!digitalSignatureName.trim()) {
+      setFormError('Digital Signature confirmation name is required to authorize governance vote.');
+      return;
+    }
 
     // Validation for NO_GO decisions
     if (decision === 'NO_GO' && !comments.trim()) {
@@ -118,6 +125,10 @@ export const ApprovalWorkflow: React.FC<ApprovalWorkflowProps> = ({
       }
     }
 
+    // Generate cryptographic-style digital signature stamp
+    const stampHash = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const generatedStamp = `SIG-2026-${stampHash}-${decision}`;
+
     onSubmitApproval({
       assessmentId: 'a1',
       approverName: userName,
@@ -126,6 +137,8 @@ export const ApprovalWorkflow: React.FC<ApprovalWorkflowProps> = ({
       evidenceUrl: evidenceUrl.trim() || undefined,
       evidenceFileName: evidenceFile?.name,
       evidenceFileData: evidenceFile?.data,
+      signatureStamp: generatedStamp,
+      digitalSignatureName: digitalSignatureName.trim(),
       conditionsText: decision === 'CONDITIONAL_GO' ? conditionsText : undefined,
       conditionsOwner: decision === 'CONDITIONAL_GO' ? finalOwner : undefined,
       dueDate: decision === 'CONDITIONAL_GO' ? dueDate : undefined,
@@ -453,6 +466,34 @@ export const ApprovalWorkflow: React.FC<ApprovalWorkflowProps> = ({
             </div>
           )}
 
+          {/* Digital Signature Confirmation Section */}
+          <div className="p-3.5 rounded-xl bg-cyan-950/40 border border-cyan-500/30 space-y-2">
+            <div className="flex items-center justify-between text-xs font-semibold text-cyan-300">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                <span>Digital Signature & Board Authorization:</span>
+              </span>
+              <span className="text-[10px] text-cyan-400/80 font-mono">CRYPTOGRAPHIC STAMP REQ</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <span className="text-[10px] text-slate-400">Approver Formal Full Name:</span>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Sarah Jenkins (Dev Lead)"
+                  value={digitalSignatureName}
+                  onChange={(e) => setDigitalSignatureName(e.target.value)}
+                  className="w-full p-2 rounded bg-gray-950 text-xs text-white border border-white/10 focus:border-cyan-500/50 focus:outline-none"
+                />
+              </div>
+              <div className="p-2 rounded bg-gray-950/80 border border-white/5 space-y-0.5 text-[10px] font-mono text-slate-400">
+                <div>AUTHORIZATION: <span className="text-cyan-300">RELEASE GOVERNANCE BOARD</span></div>
+                <div>AUTHORIZATION TIMESTAMP: <span className="text-slate-300">{new Date().toLocaleString()}</span></div>
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between pt-2">
             <div className="text-xs text-gray-400">
               Voting as: <strong className="text-white">{userName}</strong>
@@ -482,7 +523,14 @@ export const ApprovalWorkflow: React.FC<ApprovalWorkflowProps> = ({
             {approvals.map((app) => (
               <div key={app.id} className="p-3.5 rounded-xl bg-gray-900/60 border border-white/5 space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-white">{app.approverName}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-white">{app.digitalSignatureName || app.approverName}</span>
+                    {app.signatureStamp && (
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800/60">
+                        {app.signatureStamp}
+                      </span>
+                    )}
+                  </div>
                   <span className="text-[10px] text-gray-500 font-mono">{app.createdAt}</span>
                 </div>
 
