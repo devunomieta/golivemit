@@ -80,6 +80,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
 
   const [prevResponsesProp, setPrevResponsesProp] = React.useState(responses);
   const [localResponses, setLocalResponses] = React.useState<Record<string, CriterionResponse>>(responses);
+  const [isDirty, setIsDirty] = React.useState(false);
   const [savedNotice, setSavedNotice] = React.useState(false);
 
   // 2-Tier Sorted Domains: Assigned to active persona first (A-Z), then unassigned (A-Z)
@@ -186,6 +187,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
 
     const newLocal = { ...localResponses, [criterionId]: updated };
     setLocalResponses(newLocal);
+    setIsDirty(true);
     onSaveResponse(criterionId, updated);
   };
 
@@ -226,6 +228,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
 
     const newLocal = { ...localResponses, [criterionId]: updated };
     setLocalResponses(newLocal);
+    setIsDirty(true);
     setNewCommentInputs((prev) => ({ ...prev, [criterionId]: '' }));
     onSaveResponse(criterionId, updated);
   };
@@ -258,6 +261,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
 
     const newLocal = { ...localResponses, [criterionId]: updated };
     setLocalResponses(newLocal);
+    setIsDirty(true);
     setEditingCommentState(null);
     onSaveResponse(criterionId, updated);
   };
@@ -280,6 +284,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
 
     const newLocal = { ...localResponses, [criterionId]: updated };
     setLocalResponses(newLocal);
+    setIsDirty(true);
     onSaveResponse(criterionId, updated);
   };
 
@@ -319,6 +324,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
 
     const newLocal = { ...localResponses, [criterionId]: updated };
     setLocalResponses(newLocal);
+    setIsDirty(true);
     onSaveResponse(criterionId, updated);
   };
 
@@ -343,6 +349,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
 
     const newLocal = { ...localResponses, [criterionId]: updated };
     setLocalResponses(newLocal);
+    setIsDirty(true);
     onSaveResponse(criterionId, updated);
   };
 
@@ -373,6 +380,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
 
     const newLocal = { ...localResponses, [criterionId]: updated };
     setLocalResponses(newLocal);
+    setIsDirty(true);
     onSaveResponse(criterionId, updated);
   };
 
@@ -413,6 +421,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
 
     const newLocal = { ...localResponses, [criterionId]: updated };
     setLocalResponses(newLocal);
+    setIsDirty(true);
     onSaveResponse(criterionId, updated);
   };
 
@@ -463,10 +472,12 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
 
     const newLocal = { ...localResponses, [criterionId]: updated };
     setLocalResponses(newLocal);
+    setIsDirty(true);
     onSaveResponse(criterionId, updated);
   };
 
   const handleSaveAll = () => {
+    if (!isDirty) return;
     if (Object.keys(validationErrors).length > 0) {
       alert('Please resolve security and file validation errors before saving evaluations.');
       return;
@@ -475,8 +486,32 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
     Object.values(localResponses).forEach((resp) => {
       onSaveResponse(resp.criterionId, resp);
     });
+    setIsDirty(false);
     setSavedNotice(true);
     setTimeout(() => setSavedNotice(false), 3000);
+  };
+
+  const [showCloseConfirmModal, setShowCloseConfirmModal] = React.useState(false);
+
+  const handleCloseAttempt = () => {
+    if (isDirty) {
+      setShowCloseConfirmModal(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleConfirmSaveAndClose = () => {
+    handleSaveAll();
+    setShowCloseConfirmModal(false);
+    onClose();
+  };
+
+  const handleConfirmDiscardAndClose = () => {
+    setLocalResponses(responses);
+    setIsDirty(false);
+    setShowCloseConfirmModal(false);
+    onClose();
   };
 
   const getScoreBadge = (score: number) => {
@@ -503,21 +538,75 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
               <span>Evaluations & Audit Trail Saved!</span>
             </div>
           )}
+          <div className="relative group">
+            <button
+              onClick={handleSaveAll}
+              disabled={!isDirty}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                isDirty
+                  ? 'bg-cyan-600 hover:bg-cyan-500 text-white cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.3)]'
+                  : 'bg-slate-800/80 text-slate-500 border border-slate-700/50 cursor-not-allowed opacity-60'
+              }`}
+            >
+              <Save className="w-4 h-4" />
+              <span>Save Evaluations</span>
+            </button>
+            {!isDirty && (
+              <div className="absolute right-0 bottom-full mb-2 hidden group-hover:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-[11px] text-slate-300 whitespace-nowrap shadow-xl z-30 pointer-events-none animate-fade-in">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>No changes detected to save</span>
+              </div>
+            )}
+          </div>
           <button
-            onClick={handleSaveAll}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]"
-          >
-            <Save className="w-4 h-4" />
-            <span>Save Evaluations</span>
-          </button>
-          <button
-            onClick={onClose}
-            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition-all"
+            onClick={handleCloseAttempt}
+            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition-all cursor-pointer"
           >
             Close
           </button>
         </div>
       </div>
+
+      {/* Unsaved Changes Confirmation Modal Overlay */}
+      {showCloseConfirmModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="max-w-md w-full p-6 rounded-2xl bg-slate-900 border border-cyan-500/30 space-y-4 shadow-[0_0_40px_rgba(0,0,0,0.8)]">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-amber-950 text-amber-400 border border-amber-800/50 shrink-0">
+                <AlertTriangle className="w-6 h-6 text-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white font-['Outfit']">Unsaved Assessment Changes</h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  You have modified criteria scores or evidence comments awaiting save.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-slate-950/70 border border-white/5 text-xs text-slate-300 space-y-1 font-mono">
+              <p>• Save will persist your modifications to the audit log.</p>
+              <p>• Discard will revert current session edits back to original state.</p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleConfirmDiscardAndClose}
+                className="px-4 py-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 text-xs font-semibold border border-rose-800/50 transition cursor-pointer"
+              >
+                Discard & Close
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmSaveAndClose}
+                className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition shadow-[0_0_15px_rgba(6,182,212,0.3)] cursor-pointer"
+              >
+                Save & Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Domain Navigation Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
