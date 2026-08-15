@@ -30,6 +30,7 @@ interface ApprovalWorkflowProps {
   approvals: ApprovalRecord[];
   availableUsers?: UserProfile[];
   isPostSignoffModified?: boolean;
+  initialConditions?: Array<{ title: string; desc: string; role: string }>;
   onSubmitApproval: (record: Omit<ApprovalRecord, 'id' | 'createdAt'>) => void;
   onClose: () => void;
 }
@@ -41,17 +42,41 @@ export const ApprovalWorkflow: React.FC<ApprovalWorkflowProps> = ({
   approvals,
   availableUsers = [],
   isPostSignoffModified = false,
+  initialConditions = [],
   onSubmitApproval,
   onClose,
 }) => {
   const { overallScore, recommendation, hasGateBlocker, activeBlockers } = assessmentResult;
 
-  const [decision, setDecision] = React.useState<'GO' | 'CONDITIONAL_GO' | 'NO_GO'>(recommendation);
+  const [decision, setDecision] = React.useState<'GO' | 'CONDITIONAL_GO' | 'NO_GO'>(
+    initialConditions.length > 0 ? 'CONDITIONAL_GO' : recommendation
+  );
   const [comments, setComments] = React.useState('');
   const [evidenceUrl, setEvidenceUrl] = React.useState('');
   const [evidenceFile, setEvidenceFile] = React.useState<{ name: string; data: string } | null>(null);
 
-  const [conditionsText, setConditionsText] = React.useState('');
+  const [conditionsText, setConditionsText] = React.useState(() => {
+    if (initialConditions.length > 0) {
+      return initialConditions
+        .map((c, i) => `${i + 1}. [${c.title}]: ${c.desc} (Owner: ${c.role})`)
+        .join('\n\n');
+    }
+    return '';
+  });
+
+  const [prevCount, setPrevCount] = React.useState(initialConditions.length);
+
+  if (initialConditions.length !== prevCount) {
+    setPrevCount(initialConditions.length);
+    if (initialConditions.length > 0) {
+      setDecision('CONDITIONAL_GO');
+      setConditionsText(
+        initialConditions
+          .map((c, i) => `${i + 1}. [${c.title}]: ${c.desc} (Owner: ${c.role})`)
+          .join('\n\n')
+      );
+    }
+  }
   
   // Owner Selection State (Pre-filled user ID or 'other')
   const [selectedOwnerId, setSelectedOwnerId] = React.useState<string>(() => availableUsers[0]?.id || 'other');

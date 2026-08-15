@@ -15,10 +15,10 @@ export const AIRiskInsightsWidget: React.FC<AIRiskInsightsWidgetProps> = ({
 }) => {
   const { deploymentRiskIndex, riskTier, contributoryFactors, recommendedMitigations } = analysis;
 
-  const [appliedId, setAppliedId] = React.useState<string | null>(null);
+  const [appliedIds, setAppliedIds] = React.useState<Set<string>>(new Set());
 
   const handleApply = (id: string, title: string, desc: string, role: string) => {
-    setAppliedId(id);
+    setAppliedIds((prev) => new Set(prev).add(id));
     if (onApplyMitigation) {
       onApplyMitigation(title, desc, role);
     }
@@ -102,7 +102,7 @@ export const AIRiskInsightsWidget: React.FC<AIRiskInsightsWidgetProps> = ({
 
         <div className="grid grid-cols-1 gap-2">
           {recommendedMitigations.map((mit) => {
-            const isApplied = appliedId === mit.id;
+            const isApplied = appliedIds.has(mit.id);
             return (
               <div 
                 key={mit.id}
@@ -132,7 +132,7 @@ export const AIRiskInsightsWidget: React.FC<AIRiskInsightsWidgetProps> = ({
                     {isApplied ? (
                       <>
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Applied!</span>
+                        <span>Applied</span>
                       </>
                     ) : (
                       <>

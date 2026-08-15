@@ -35,6 +35,7 @@ interface ExecutiveDashboardProps {
   onOpenAssessment: () => void;
   onOpenApproval: () => void;
   onOpenCryptoVerifier?: () => void;
+  onApplyMitigation?: (title: string, desc: string, role: string) => void;
 }
 
 export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
@@ -48,6 +49,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   onOpenAssessment,
   onOpenApproval,
   onOpenCryptoVerifier,
+  onApplyMitigation,
 }) => {
   const { overallScore, recommendation, hasGateBlocker, activeBlockers, domainBreakdown } = assessmentResult;
 
@@ -245,7 +247,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
       {aiAnalysis && (
         <AIRiskInsightsWidget 
           analysis={aiAnalysis} 
-          onApplyMitigation={() => onOpenApproval()}
+          onApplyMitigation={onApplyMitigation}
         />
       )}
 

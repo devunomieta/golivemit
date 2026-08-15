@@ -112,6 +112,14 @@ export default function Home() {
   const [activeModal, setActiveModal] = React.useState<'dashboard' | 'assessment' | 'approval' | 'report' | 'crypto'>('dashboard');
   const [showProjectManager, setShowProjectManager] = React.useState(false);
 
+  // Cumulative AI Mitigations State
+  const [pendingMitigations, setPendingMitigations] = React.useState<Array<{ title: string; desc: string; role: string }>>([]);
+
+  const handleApplyMitigation = (title: string, desc: string, role: string) => {
+    setPendingMitigations((prev) => [...prev, { title, desc, role }]);
+    setActiveModal('approval');
+  };
+
   // Cryptographic Ledger Verification State
   const [ledgerState, setLedgerState] = React.useState<{
     isChainValid: boolean;
@@ -472,6 +480,7 @@ export default function Home() {
                 onOpenAssessment={() => setActiveModal('assessment')}
                 onOpenApproval={() => setActiveModal('approval')}
                 onOpenCryptoVerifier={() => setActiveModal('crypto')}
+                onApplyMitigation={handleApplyMitigation}
               />
             )}
 
@@ -497,6 +506,7 @@ export default function Home() {
                 approvals={approvals}
                 availableUsers={users}
                 isPostSignoffModified={isPostSignoffModified}
+                initialConditions={pendingMitigations}
                 onSubmitApproval={(rec) =>
                   handleAddApproval(
                     rec.decision,
