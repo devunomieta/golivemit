@@ -38,13 +38,47 @@ import {
 import { FileText, Layers, ShieldCheck, CheckCircle2, FolderCog } from 'lucide-react';
 
 export default function Home() {
-  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [isAuthenticated, setIsAuthenticated] = React.useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('golive_authenticated') === 'true';
+    }
+    return false;
+  });
+
   const [users, setUsers] = React.useState<UserProfile[]>([]);
-  const [activeUser, setActiveUser] = React.useState<UserProfile | null>(null);
+  const [activeUser, setActiveUser] = React.useState<UserProfile | null>(() => {
+    if (typeof window !== 'undefined') {
+      const savedUserId = localStorage.getItem('golive_active_user_id');
+      if (savedUserId) {
+        // Will be reconciled during data hydration if users list loads
+        return { id: savedUserId, name: 'Loading...', email: '', role: 'admin', department: '' };
+      }
+    }
+    return null;
+  });
+
   const [domains, setDomains] = React.useState<ReadinessDomain[]>([]);
   const [criteria, setCriteria] = React.useState<ReadinessCriterion[]>([]);
   const [responses, setResponses] = React.useState<Record<string, CriterionResponse>>({});
   const [approvals, setApprovals] = React.useState<ApprovalRecord[]>([]);
+
+  const handleAuthSuccess = (user: UserProfile) => {
+    setIsAuthenticated(true);
+    setActiveUser(user);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('golive_authenticated', 'true');
+      localStorage.setItem('golive_active_user_id', user.id);
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setActiveUser(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('golive_authenticated');
+      localStorage.removeItem('golive_active_user_id');
+    }
+  };
   
   // Project & Release State with LocalStorage Initialization
   const [projects, setProjects] = React.useState<ProjectRecord[]>(INITIAL_PROJECTS);
@@ -93,6 +127,9 @@ export default function Home() {
     if (newUser.id === activeUser?.id) return;
     triggerSwitchFeedback('persona', newUser.name, () => {
       setActiveUser(newUser);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('golive_active_user_id', newUser.id);
+      }
     });
   };
 
@@ -148,7 +185,11 @@ export default function Home() {
       }
 
       if (fetchedUsers.length > 0) {
-        setActiveUser((prev) => prev || fetchedUsers[0]);
+        setActiveUser((prev) => {
+          if (!prev) return fetchedUsers[0];
+          const matched = fetchedUsers.find((u) => u.id === prev.id);
+          return matched || fetchedUsers[0];
+        });
       }
 
       setIsLoadingData(false);
@@ -244,16 +285,6 @@ export default function Home() {
     }
   };
 
-  const handleLoginSuccess = (user: UserProfile) => {
-    setActiveUser(user);
-    setIsAuthenticated(true);
-  };
-
-  const handleSignOut = () => {
-    setIsAuthenticated(false);
-  };
-
-
   const handleRefreshData = React.useCallback(async () => {
     const [fetchedProjects, fetchedReleases] = await Promise.all([
       fetchProjects(),
@@ -266,7 +297,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#070A12] text-slate-100 flex flex-col font-sans">
       {!isAuthenticated ? (
-        <AuthLoginModal onLoginSuccess={handleLoginSuccess} />
+        <AuthLoginModal onLoginSuccess={handleAuthSuccess} />
       ) : isLoadingData ? (
         <div className="flex-1 flex flex-col items-center justify-center space-y-4 min-h-[80vh]">
           <div className="w-12 h-12 rounded-full border-4 border-cyan-500/20 border-t-cyan-400 animate-spin glow-cyan" />
@@ -285,7 +316,7 @@ export default function Home() {
             <RoleSwitcher 
               activeUser={activeUser} 
               onUserChange={handleUserChange} 
-              onSignOut={handleSignOut} 
+              onSignOut={handleLogout} 
               availableUsers={users}
               projects={projects}
               releases={releases}
