@@ -652,6 +652,48 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
 
               <div className="text-sm font-medium text-white">{criterion.criterionText}</div>
 
+              {/* Unassigned Form Alert & Suitable Assignee Recommendation */}
+              {!resp.assignedUserId && (
+                <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs flex flex-wrap items-center justify-between gap-3 animate-fade-in">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                    <div>
+                      <span className="font-bold text-amber-300">Form Unassigned: </span>
+                      <span>No specific team member assigned yet.</span>
+                      {(() => {
+                        const suitableUsers = availableUsers.filter((u) => u.role === assignedRole);
+                        if (suitableUsers.length > 0) {
+                          return (
+                            <span className="ml-1 text-slate-300 font-medium">
+                              Recommended for <strong className="text-cyan-300 capitalize">{assignedRole}</strong> role: {' '}
+                              <strong className="text-cyan-300">{suitableUsers.map((u) => u.name).join(', ')}</strong>
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </div>
+                  </div>
+
+                  {isManager && (
+                    <div className="flex items-center gap-1.5">
+                      {availableUsers
+                        .filter((u) => u.role === assignedRole)
+                        .slice(0, 2)
+                        .map((u) => (
+                          <button
+                            key={u.id}
+                            onClick={() => handleReassignCriterionUser(criterion.id, u.id)}
+                            className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[11px] font-semibold transition cursor-pointer"
+                          >
+                            Assign {u.name.split(' ')[0]}
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Sliders: Likelihood & Impact */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                 {/* Likelihood Slider */}
