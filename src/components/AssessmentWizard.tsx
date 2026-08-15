@@ -576,19 +576,33 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
                       <UserPlus className="w-3.5 h-3.5 text-cyan-400" />
                       <span className="text-xs text-slate-400">Assign:</span>
                       
-                      {/* Role Selector */}
+                      {/* Role Selector with Recommended Indicator */}
                       <select
                         value={assignedRole}
                         onChange={(e) => handleReassignCriterionRole(criterion.id, e.target.value as UserRole)}
                         className="bg-transparent text-xs text-cyan-300 font-semibold focus:outline-none cursor-pointer"
                       >
-                        <option value="developer" className="bg-slate-900">Developer</option>
-                        <option value="qa" className="bg-slate-900">QA Lead</option>
-                        <option value="devops" className="bg-slate-900">DevOps</option>
-                        <option value="security" className="bg-slate-900">Security Lead</option>
-                        <option value="business" className="bg-slate-900">Business / UAT</option>
-                        <option value="project_manager" className="bg-slate-900">PM</option>
-                        <option value="admin" className="bg-slate-900">Admin</option>
+                        <option value="developer" className="bg-slate-900">
+                          Developer {criterion.assignedRole === 'developer' ? '⭐ (Recommended)' : ''}
+                        </option>
+                        <option value="qa" className="bg-slate-900">
+                          QA Lead {criterion.assignedRole === 'qa' ? '⭐ (Recommended)' : ''}
+                        </option>
+                        <option value="devops" className="bg-slate-900">
+                          DevOps {criterion.assignedRole === 'devops' ? '⭐ (Recommended)' : ''}
+                        </option>
+                        <option value="security" className="bg-slate-900">
+                          Security Lead {criterion.assignedRole === 'security' ? '⭐ (Recommended)' : ''}
+                        </option>
+                        <option value="business" className="bg-slate-900">
+                          Business / UAT {criterion.assignedRole === 'business' ? '⭐ (Recommended)' : ''}
+                        </option>
+                        <option value="project_manager" className="bg-slate-900">
+                          PM {criterion.assignedRole === 'project_manager' ? '⭐ (Recommended)' : ''}
+                        </option>
+                        <option value="admin" className="bg-slate-900">
+                          Admin {criterion.assignedRole === 'admin' ? '⭐ (Recommended)' : ''}
+                        </option>
                       </select>
 
                       {/* User Member Selector */}
