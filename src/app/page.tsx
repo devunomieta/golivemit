@@ -237,12 +237,21 @@ export default function Home() {
     return calculateAssessmentReadiness(domains, criteria, responses);
   }, [domains, criteria, responses]);
 
+  // Timestamp tracking for Post Sign-Off Modification warning
+  const [lastResponseUpdateAt, setLastResponseUpdateAt] = React.useState<number>(0);
+  const [lastApprovalVoteAt, setLastApprovalVoteAt] = React.useState<number>(0);
+
+  const isPostSignoffModified = React.useMemo(() => {
+    return approvals.length > 0 && lastResponseUpdateAt > lastApprovalVoteAt;
+  }, [approvals, lastResponseUpdateAt, lastApprovalVoteAt]);
+
   const handleSaveResponse = async (criterionId: string, updatedResponse: CriterionResponse) => {
     const updated = {
       ...responses,
       [criterionId]: updatedResponse,
     };
     setResponses(updated);
+    setLastResponseUpdateAt(Date.now());
 
     // Save to browser LocalStorage immediately for persistent page reloads
     if (activeRelease && typeof window !== 'undefined') {
@@ -257,27 +266,41 @@ export default function Home() {
 
   const handleAddApproval = async (
     decision: 'GO' | 'CONDITIONAL_GO' | 'NO_GO',
+    comments?: string,
+    evidenceUrl?: string,
+    evidenceFileName?: string,
+    evidenceFileData?: string,
     conditionsText?: string,
     conditionsOwner?: string,
     dueDate?: string
   ) => {
+    const now = Date.now();
     const newRecord: ApprovalRecord = {
-      id: `app-${Date.now()}`,
+      id: `app-${now}`,
       assessmentId: 'ass-1',
       approverName: activeUser ? activeUser.name : 'Approver',
       decision,
+      comments,
+      evidenceUrl,
+      evidenceFileName,
+      evidenceFileData,
       conditionsText,
       conditionsOwner,
       dueDate,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(now).toISOString(),
     };
     setApprovals((prev) => [newRecord, ...prev]);
+    setLastApprovalVoteAt(now);
 
     if (activeUser && activeRelease) {
       await submitApprovalVote(
         activeRelease.id,
         activeUser.id,
         decision,
+        comments,
+        evidenceUrl,
+        evidenceFileName,
+        evidenceFileData,
         conditionsText,
         conditionsOwner,
         dueDate
@@ -416,6 +439,8 @@ export default function Home() {
                 projectName={activeProject?.projectName || 'Project'}
                 releaseName={activeRelease?.releaseName || 'Release'}
                 targetDate={activeRelease?.targetDate || ''}
+                hasApprovals={approvals.length > 0}
+                isPostSignoffModified={isPostSignoffModified}
                 onOpenAssessment={() => setActiveModal('assessment')}
                 onOpenApproval={() => setActiveModal('approval')}
               />
@@ -441,9 +466,15 @@ export default function Home() {
                 userName={activeUser.name}
                 assessmentResult={assessmentResult}
                 approvals={approvals}
+                availableUsers={users}
+                isPostSignoffModified={isPostSignoffModified}
                 onSubmitApproval={(rec) =>
                   handleAddApproval(
                     rec.decision,
+                    rec.comments,
+                    rec.evidenceUrl,
+                    rec.evidenceFileName,
+                    rec.evidenceFileData,
                     rec.conditionsText,
                     rec.conditionsOwner,
                     rec.dueDate

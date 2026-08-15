@@ -10,7 +10,8 @@ import {
   Layers, 
   FileCheck2,
   TrendingUp,
-  Activity
+  Activity,
+  AlertOctagon
 } from 'lucide-react';
 import { 
   RadarChart, 
@@ -27,6 +28,8 @@ interface ExecutiveDashboardProps {
   projectName: string;
   releaseName: string;
   targetDate: string;
+  hasApprovals?: boolean;
+  isPostSignoffModified?: boolean;
   onOpenAssessment: () => void;
   onOpenApproval: () => void;
 }
@@ -36,6 +39,8 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   projectName,
   releaseName,
   targetDate,
+  hasApprovals = false,
+  isPostSignoffModified = false,
   onOpenAssessment,
   onOpenApproval,
 }) => {
@@ -132,6 +137,23 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Post Sign-Off Modification Alert Banner */}
+      {isPostSignoffModified && hasApprovals && (
+        <div className="p-5 rounded-2xl bg-rose-950/80 border border-rose-500/60 flex items-start gap-4 animate-pulse shadow-[0_0_30px_rgba(244,63,94,0.25)]">
+          <div className="p-2.5 rounded-xl bg-rose-900/80 text-rose-300 border border-rose-500/40 shrink-0">
+            <AlertOctagon className="w-6 h-6 text-rose-400" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-sm font-bold text-rose-200 tracking-wide font-display uppercase">
+              ⚠️ Assessment Modified Post Sign-Off — Re-Vote Recommended
+            </h4>
+            <p className="text-xs text-rose-300/90 leading-relaxed">
+              Assessment forms or evidence were updated after a formal governance sign-off vote was recorded for this release candidate. Approvers should review the updated risk matrix and cast a refreshed decision.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Gate Blocker Alert Banner */}
       {hasGateBlocker && (

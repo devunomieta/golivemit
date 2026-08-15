@@ -52,6 +52,10 @@ export interface ApprovalRecord {
   assessmentId: string;
   approverName: string;
   decision: 'GO' | 'CONDITIONAL_GO' | 'NO_GO';
+  comments?: string;
+  evidenceUrl?: string;
+  evidenceFileName?: string;
+  evidenceFileData?: string;
   conditionsText?: string;
   conditionsOwner?: string;
   dueDate?: string;
