@@ -143,7 +143,24 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
   }
 
   const selectedDomain = sortedDomains.find((d) => d.id === selectedDomainId) || sortedDomains[0] || domains[0];
-  const domainCriteria = criteria.filter((c) => c.domainId === selectedDomain?.id);
+
+  // 2-Tier Intra-Domain Criteria Priority Sort: Relevant to active persona first (A-Z), then unassigned (A-Z)
+  const domainCriteria = React.useMemo(() => {
+    const raw = criteria.filter((c) => c.domainId === selectedDomain?.id);
+    return raw.sort((a, b) => {
+      const respA = localResponses[a.id];
+      const respB = localResponses[b.id];
+      const roleA = respA?.assignedRoleOverride || a.assignedRole;
+      const roleB = respB?.assignedRoleOverride || b.assignedRole;
+
+      const aIsRelevant = roleA === userRole || respA?.assignedUserId === userName;
+      const bIsRelevant = roleB === userRole || respB?.assignedUserId === userName;
+
+      if (aIsRelevant && !bIsRelevant) return -1;
+      if (!aIsRelevant && bIsRelevant) return 1;
+      return a.criterionText.localeCompare(b.criterionText, undefined, { sensitivity: 'base' });
+    });
+  }, [criteria, selectedDomain, localResponses, userRole, userName]);
 
   const handleSliderChange = (criterionId: string, field: 'likelihood' | 'impact', value: number) => {
     const current = localResponses[criterionId] || {
