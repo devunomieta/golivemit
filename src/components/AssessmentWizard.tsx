@@ -17,6 +17,7 @@ import {
   sanitizeText 
 } from '@/lib/validationUtils';
 import { useDirtyGuard } from '@/lib/useDirtyGuard';
+import { CriteriaManagerModal } from '@/components/CriteriaManagerModal';
 import { 
   ShieldAlert, 
   Link as LinkIcon, 
@@ -35,7 +36,10 @@ import {
   Trash2,
   FileWarning,
   UserPlus,
-  Send
+  Send,
+  Settings2,
+  Check,
+  XCircle
 } from 'lucide-react';
 
 interface AssessmentWizardProps {
@@ -46,6 +50,9 @@ interface AssessmentWizardProps {
   responses: Record<string, CriterionResponse>;
   availableUsers?: UserProfile[];
   onSaveResponse: (criterionId: string, response: CriterionResponse) => void;
+  onAddCriterion?: (criterion: Omit<ReadinessCriterion, 'id'>) => Promise<void>;
+  onUpdateCriterion?: (id: string, updates: Partial<ReadinessCriterion>) => Promise<void>;
+  onDeleteCriterion?: (id: string) => Promise<void>;
   onClose: () => void;
 }
 
@@ -75,6 +82,9 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
   responses,
   availableUsers = [],
   onSaveResponse,
+  onAddCriterion,
+  onUpdateCriterion,
+  onDeleteCriterion,
   onClose,
 }) => {
   const isManager = userRole === 'admin' || userRole === 'project_manager';
@@ -83,6 +93,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
   const [localResponses, setLocalResponses] = React.useState<Record<string, CriterionResponse>>(responses);
   const [isDirty, setIsDirty] = React.useState(false);
   const [savedNotice, setSavedNotice] = React.useState(false);
+  const [isCriteriaManagerOpen, setIsCriteriaManagerOpen] = React.useState(false);
 
   // Thesis Snippet 4.1: Dirty-State Detection & BeforeUnload Protection
   useDirtyGuard(localResponses, responses);
@@ -332,6 +343,41 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
     onSaveResponse(criterionId, updated);
   };
 
+  // --- Formal Evidence Verification by Admin / PM ---
+  const handleVerifyEvidence = (criterionId: string, status: 'VERIFIED' | 'REJECTED') => {
+    const current = localResponses[criterionId];
+    if (!current) return;
+
+    const meta: EvidenceMetadata = current.evidenceMetadata || {
+      url: current.evidenceUrl,
+      filename: current.evidenceFilename,
+      type: current.evidenceType,
+    };
+
+    const updatedMeta: EvidenceMetadata = {
+      ...meta,
+      verificationStatus: status,
+      verifiedBy: userName,
+      verifiedAt: new Date().toISOString(),
+    };
+
+    const updated: CriterionResponse = {
+      ...current,
+      evidenceMetadata: updatedMeta,
+      updatedBy: userName,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const actionMsg = `EVIDENCE_${status}_BY_${userRole.toUpperCase()}`;
+    const auditRecord = generateAuditRecord(userName, current, updated, actionMsg);
+    updated.auditTrail = [auditRecord, ...(current.auditTrail || [])];
+
+    const newLocal = { ...localResponses, [criterionId]: updated };
+    setLocalResponses(newLocal);
+    setIsDirty(true);
+    onSaveResponse(criterionId, updated);
+  };
+
   // --- Dynamic Criterion Reassignment by Admin & PM ---
   const handleReassignCriterionRole = (criterionId: string, targetRole: UserRole) => {
     const current = localResponses[criterionId] || {
@@ -487,6 +533,25 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
       return;
     }
 
+    // Mandatory Evidence Rule Check:
+    // Any criterion with assessed Likelihood/Impact MUST have supporting evidence
+    const missingEvidenceCriteria: string[] = [];
+    Object.values(localResponses).forEach((resp) => {
+      const isAssessed = (resp.likelihood && resp.likelihood > 0) || (resp.impact && resp.impact > 0);
+      const hasProof = !!(resp.evidenceUrl?.trim() || resp.evidenceFilename?.trim());
+      if (isAssessed && !hasProof) {
+        const crit = criteria.find((c) => c.id === resp.criterionId);
+        missingEvidenceCriteria.push(crit?.criterionText || resp.criterionId);
+      }
+    });
+
+    if (missingEvidenceCriteria.length > 0) {
+      alert(
+        `[Mandatory Evidence Enforcement]\nThe following evaluated criteria require supporting evidence (URL proof or file attachment) before they can be saved:\n\n• ${missingEvidenceCriteria.slice(0, 3).join('\n• ')}${missingEvidenceCriteria.length > 3 ? `\n...and ${missingEvidenceCriteria.length - 3} more` : ''}`
+      );
+      return;
+    }
+
     Object.values(localResponses).forEach((resp) => {
       onSaveResponse(resp.criterionId, resp);
     });
@@ -536,6 +601,16 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
+          {isManager && (
+            <button
+              onClick={() => setIsCriteriaManagerOpen(true)}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 transition-all cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+            >
+              <Settings2 className="w-4 h-4 text-cyan-400" />
+              <span>Manage Criteria</span>
+            </button>
+          )}
+
           {savedNotice && (
             <div className="flex items-center gap-1 text-xs text-emerald-400 bg-emerald-950/80 px-3 py-1.5 rounded-lg border border-emerald-800/50 animate-fade-in">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
@@ -907,7 +982,23 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
                       )}
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {resp.evidenceMetadata?.verificationStatus === 'VERIFIED' && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800/50 flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Verified by {resp.evidenceMetadata.verifiedBy}
+                        </span>
+                      )}
+                      {resp.evidenceMetadata?.verificationStatus === 'REJECTED' && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-400 border border-rose-800/50 flex items-center gap-1">
+                          <XCircle className="w-3 h-3" /> Rejected by {resp.evidenceMetadata.verifiedBy}
+                        </span>
+                      )}
+                      {(!resp.evidenceMetadata?.verificationStatus || resp.evidenceMetadata?.verificationStatus === 'PENDING_REVIEW') && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/80 text-amber-300 border border-amber-800/50">
+                          Pending Review
+                        </span>
+                      )}
+
                       {resp.evidenceUrl && (
                         <a
                           href={resp.evidenceUrl}
@@ -920,7 +1011,27 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
                         </a>
                       )}
 
-                      {/* "Wrong File" Toggle Button for Admin, PM & Assigned Roles */}
+                      {/* Admin / PM Evidence Verification Actions */}
+                      {isManager && (
+                        <div className="flex items-center gap-1 bg-black/40 p-1 rounded-lg border border-white/5">
+                          <button
+                            onClick={() => handleVerifyEvidence(criterion.id, 'VERIFIED')}
+                            className="px-2 py-1 rounded bg-emerald-950 hover:bg-emerald-900 text-emerald-300 text-[10px] font-semibold border border-emerald-800/50 flex items-center gap-1 transition"
+                            title="Approve Evidence"
+                          >
+                            <Check className="w-3 h-3" /> Approve
+                          </button>
+                          <button
+                            onClick={() => handleVerifyEvidence(criterion.id, 'REJECTED')}
+                            className="px-2 py-1 rounded bg-rose-950 hover:bg-rose-900 text-rose-300 text-[10px] font-semibold border border-rose-800/50 flex items-center gap-1 transition"
+                            title="Reject Evidence"
+                          >
+                            <XCircle className="w-3 h-3" /> Reject
+                          </button>
+                        </div>
+                      )}
+
+                      {/* "Wrong File" Toggle Button */}
                       <button
                         onClick={() => handleToggleWrongFile(criterion.id)}
                         disabled={!isAssigned}
@@ -931,7 +1042,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
                         }`}
                       >
                         <FileWarning className="w-3.5 h-3.5" />
-                        <span>{isWrongFile ? 'Clear Flag (Mark Valid)' : 'Mark as Wrong File'}</span>
+                        <span>{isWrongFile ? 'Clear Flag' : 'Wrong File'}</span>
                       </button>
                     </div>
                   </div>
@@ -1087,6 +1198,18 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
           );
         })}
       </div>
+
+      {/* Dynamic Criteria Manager Modal */}
+      {isCriteriaManagerOpen && onAddCriterion && onUpdateCriterion && onDeleteCriterion && (
+        <CriteriaManagerModal
+          domains={domains}
+          criteria={criteria}
+          onAddCriterion={onAddCriterion}
+          onUpdateCriterion={onUpdateCriterion}
+          onDeleteCriterion={onDeleteCriterion}
+          onClose={() => setIsCriteriaManagerOpen(false)}
+        />
+      )}
     </div>
   );
 };

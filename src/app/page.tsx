@@ -12,6 +12,7 @@ import { ProjectManager } from '@/components/ProjectManager';
 import { CryptographicVerifierModal } from '@/components/CryptographicVerifierModal';
 import { calculateAIRiskAnalysis } from '@/lib/aiRiskEngine';
 import { verifyLedgerIntegrity, CryptographicBlock } from '@/lib/cryptoLedger';
+import { RoleCapabilityBadge } from '@/components/RoleCapabilityBadge';
 import {
   UserProfile,
   ReadinessDomain,
@@ -27,6 +28,9 @@ import {
   fetchProfiles,
   fetchDomains,
   fetchCriteria,
+  createCriterion,
+  updateCriterion,
+  deleteCriterion,
   fetchAssessmentResponses,
   saveAssessmentResponse,
   fetchApprovals,
@@ -394,6 +398,16 @@ export default function Home() {
           {/* Main Content Area */}
           <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
 
+            {/* Role Capability Indicator Banner */}
+            {activeUser && (
+              <div className="print:hidden">
+                <RoleCapabilityBadge
+                  userRole={activeUser.role}
+                  userName={activeUser.name}
+                />
+              </div>
+            )}
+
             {/* Project Governance Controls Sub-header */}
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-cyan-950/40 border border-white/10 shadow-lg print:hidden">
               <div className="flex items-center gap-3">
@@ -493,6 +507,20 @@ export default function Home() {
                 responses={responses}
                 availableUsers={users}
                 onSaveResponse={handleSaveResponse}
+                onAddCriterion={async (newCrit) => {
+                  const created = await createCriterion(newCrit);
+                  setCriteria((prev) => [...prev, created]);
+                }}
+                onUpdateCriterion={async (id, updates) => {
+                  const updated = await updateCriterion(id, updates);
+                  if (updated) {
+                    setCriteria((prev) => prev.map((c) => (c.id === id ? updated : c)));
+                  }
+                }}
+                onDeleteCriterion={async (id) => {
+                  await deleteCriterion(id);
+                  setCriteria((prev) => prev.filter((c) => c.id !== id));
+                }}
                 onClose={() => setActiveModal('dashboard')}
               />
             )}

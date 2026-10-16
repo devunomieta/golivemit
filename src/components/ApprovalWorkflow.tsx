@@ -20,7 +20,8 @@ import {
   Paperclip,
   FileText,
   UploadCloud,
-  X
+  X,
+  Lock
 } from 'lucide-react';
 
 interface ApprovalWorkflowProps {
@@ -545,8 +546,22 @@ export const ApprovalWorkflow: React.FC<ApprovalWorkflowProps> = ({
           </div>
         </form>
       ) : (
-        <div className="p-4 rounded-xl bg-gray-900/60 border border-white/5 text-xs text-gray-400 text-center">
-          You are currently viewing as <strong>{userName} ({userRole})</strong>. Governance voting is restricted to <strong>Approver Board</strong> or <strong>Admin</strong>.
+        <div className="p-5 rounded-2xl bg-slate-900/80 border border-amber-500/30 text-xs text-slate-300 space-y-2">
+          <div className="flex items-center gap-2.5 text-amber-300 font-semibold text-sm">
+            <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>Governance Board Voting Restricted (Read-Only Mode)</span>
+          </div>
+          <p className="text-slate-400 leading-relaxed">
+            You are currently accessing the Governance Board as <strong className="text-white">{userName} ({userRole})</strong>. Formal Go / Conditional Go / No-Go sign-off votes require executive authorization and are restricted strictly to <strong className="text-teal-300">Release Approver Board</strong> and <strong className="text-purple-300">System Administrators</strong>.
+          </p>
+          <div className="flex items-center gap-2 pt-1 font-mono text-[11px] text-slate-400">
+            <span className="px-2.5 py-1 rounded-lg bg-black/40 border border-white/5">
+              Your Role Status: Evaluator / Viewer
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-black/40 border border-white/5 text-cyan-300">
+              Audit Trail & Cryptographic Proof Verification: Fully Accessible
+            </span>
+          </div>
         </div>
       )}
 

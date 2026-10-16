@@ -72,7 +72,8 @@ export function ProjectManager({
   );
   const [releaseName, setReleaseName] = useState('');
   const [targetDate, setTargetDate] = useState('');
-  const [releaseStatus, setReleaseStatus] = useState<'draft' | 'under_assessment' | 'approved' | 'rejected'>('draft');
+  const [releaseStatus, setReleaseStatus] = useState<'draft' | 'under_assessment' | 'approved' | 'rejected'>('under_assessment');
+  const [templateMode, setTemplateMode] = useState<'standard_zero' | 'blank'>('standard_zero');
 
   const handleStartCreateProject = () => {
     setEditingProject(null);
@@ -126,7 +127,8 @@ export function ProjectManager({
         targetDate,
         status: releaseStatus,
       },
-      user.id
+      user.id,
+      templateMode
     );
     setIsSubmitting(false);
     onRefreshData();
@@ -522,6 +524,56 @@ export function ProjectManager({
                     <option value="approved">Approved</option>
                     <option value="rejected">Rejected</option>
                   </select>
+                </div>
+              </div>
+
+              {/* Template Initialization Selector */}
+              <div className="space-y-2 p-3.5 rounded-xl bg-slate-950/80 border border-white/10">
+                <label className="text-xs font-semibold text-cyan-300 block">
+                  Assessment Form Initialization Mode:
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className={`p-3 rounded-xl border cursor-pointer transition flex items-start gap-2.5 ${
+                    templateMode === 'standard_zero'
+                      ? 'bg-cyan-950/60 border-cyan-500/50 text-white'
+                      : 'bg-slate-900/60 border-white/5 text-slate-400 hover:text-white'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="templateMode"
+                      value="standard_zero"
+                      checked={templateMode === 'standard_zero'}
+                      onChange={() => setTemplateMode('standard_zero')}
+                      className="mt-0.5 text-cyan-500 focus:ring-cyan-500 bg-slate-800"
+                    />
+                    <div>
+                      <div className="text-xs font-bold text-white">Standard 10-Domain Template (0-Value)</div>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Imports standard criteria questions with all evaluation scores reset to 0 (neutral unassessed state).
+                      </p>
+                    </div>
+                  </label>
+
+                  <label className={`p-3 rounded-xl border cursor-pointer transition flex items-start gap-2.5 ${
+                    templateMode === 'blank'
+                      ? 'bg-cyan-950/60 border-cyan-500/50 text-white'
+                      : 'bg-slate-900/60 border-white/5 text-slate-400 hover:text-white'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="templateMode"
+                      value="blank"
+                      checked={templateMode === 'blank'}
+                      onChange={() => setTemplateMode('blank')}
+                      className="mt-0.5 text-cyan-500 focus:ring-cyan-500 bg-slate-800"
+                    />
+                    <div>
+                      <div className="text-xs font-bold text-white">Blank Custom Form (0 Criteria)</div>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Starts empty. Admin and PM can dynamically define custom questions per domain from scratch.
+                      </p>
+                    </div>
+                  </label>
                 </div>
               </div>
 

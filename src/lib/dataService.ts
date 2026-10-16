@@ -60,6 +60,15 @@ export async function fetchDomains(): Promise<ReadinessDomain[]> {
 }
 
 export async function fetchCriteria(): Promise<ReadinessCriterion[]> {
+  if (typeof window !== 'undefined') {
+    const local = localStorage.getItem('golive_custom_criteria');
+    if (local) {
+      try {
+        return JSON.parse(local);
+      } catch { /* empty */ }
+    }
+  }
+
   if (!isSupabaseConfigured || !supabase) {
     return INITIAL_CRITERIA;
   }
@@ -77,6 +86,88 @@ export async function fetchCriteria(): Promise<ReadinessCriterion[]> {
   } catch {
     return INITIAL_CRITERIA;
   }
+}
+
+export async function createCriterion(
+  criterion: Omit<ReadinessCriterion, 'id'>
+): Promise<ReadinessCriterion> {
+  const newCriterion: ReadinessCriterion = {
+    ...criterion,
+    id: `c-cust-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+  };
+
+  if (typeof window !== 'undefined') {
+    const current = await fetchCriteria();
+    const updated = [...current, newCriterion];
+    localStorage.setItem('golive_custom_criteria', JSON.stringify(updated));
+  }
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await supabase.from('readiness_criteria').insert({
+        domain_id: criterion.domainId,
+        criterion_text: criterion.criterionText,
+        weight: criterion.weight,
+        assigned_role: criterion.assignedRole,
+        gate_rule_flag: criterion.gateRuleFlag,
+      });
+    } catch (e) {
+      console.warn('Failed to persist criterion to Supabase:', e);
+    }
+  }
+
+  return newCriterion;
+}
+
+export async function updateCriterion(
+  id: string,
+  updates: Partial<ReadinessCriterion>
+): Promise<ReadinessCriterion | null> {
+  const current = await fetchCriteria();
+  const index = current.findIndex((c) => c.id === id);
+  if (index === -1) return null;
+
+  const updatedCriterion = { ...current[index], ...updates };
+  const updatedList = [...current];
+  updatedList[index] = updatedCriterion;
+
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('golive_custom_criteria', JSON.stringify(updatedList));
+  }
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await supabase.from('readiness_criteria').update({
+        criterion_text: updatedCriterion.criterionText,
+        weight: updatedCriterion.weight,
+        assigned_role: updatedCriterion.assignedRole,
+        gate_rule_flag: updatedCriterion.gateRuleFlag,
+      }).eq('id', id);
+    } catch (e) {
+      console.warn('Failed to update criterion in Supabase:', e);
+    }
+  }
+
+  return updatedCriterion;
+}
+
+export async function deleteCriterion(id: string): Promise<boolean> {
+  const current = await fetchCriteria();
+  const updatedList = current.filter((c) => c.id !== id);
+
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('golive_custom_criteria', JSON.stringify(updatedList));
+  }
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await supabase.from('readiness_criteria').delete().eq('id', id);
+    } catch (e) {
+      console.warn('Failed to delete criterion from Supabase:', e);
+    }
+  }
+
+  return true;
 }
 
 export async function fetchAssessmentResponses(releaseId: string): Promise<Record<string, CriterionResponse>> {
@@ -487,9 +578,40 @@ export async function fetchReleases(projectId?: string): Promise<ReleaseRecord[]
   }
 }
 
-export async function createRelease(release: Omit<ReleaseRecord, 'id'>, userId?: string): Promise<ReleaseRecord | null> {
+export async function createRelease(
+  release: Omit<ReleaseRecord, 'id'>, 
+  userId?: string,
+  templateMode: 'standard_zero' | 'blank' = 'standard_zero'
+): Promise<ReleaseRecord | null> {
   const newId = `r-${Date.now()}`;
   const newRelease: ReleaseRecord = { id: newId, ...release };
+
+  // Initialize responses for the new release
+  if (templateMode === 'standard_zero') {
+    const allCriteria = await fetchCriteria();
+    const zeroResponses: Record<string, CriterionResponse> = {};
+    allCriteria.forEach((c) => {
+      zeroResponses[c.id] = {
+        criterionId: c.id,
+        likelihood: 0,
+        impact: 0,
+        calculatedRiskScore: 0,
+        status: 'UNASSESSED',
+        comment: '',
+        commentsThread: [],
+        auditTrail: [],
+      };
+    });
+    MOCK_RESPONSES_BY_RELEASE[newId] = zeroResponses;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`golive_responses_${newId}`, JSON.stringify(zeroResponses));
+    }
+  } else {
+    MOCK_RESPONSES_BY_RELEASE[newId] = {};
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`golive_responses_${newId}`, JSON.stringify({}));
+    }
+  }
 
   if (!isSupabaseConfigured || !supabase) {
     MOCK_RELEASES_STORE.unshift(newRelease);

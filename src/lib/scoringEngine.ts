@@ -57,12 +57,16 @@ export interface EvidenceMetadata {
   flaggedBy?: string;
   flaggedAt?: string;
   flagReason?: string;
+  verificationStatus?: 'PENDING_REVIEW' | 'VERIFIED' | 'REJECTED';
+  verifiedBy?: string;
+  verifiedAt?: string;
+  verificationNotes?: string;
 }
 
 export interface CriterionResponse {
   criterionId: string;
-  likelihood: number; // 1 (Very Low) to 5 (Very High)
-  impact: number;     // 1 (Very Low) to 5 (Very High)
+  likelihood: number; // 0 (Unassessed) or 1 (Very Low) to 5 (Very High)
+  impact: number;     // 0 (Unassessed) or 1 (Very Low) to 5 (Very High)
   calculatedRiskScore: number; // Likelihood * Impact
   comment?: string;
   evidenceUrl?: string;
@@ -75,7 +79,7 @@ export interface CriterionResponse {
   updatedBy?: string;
   updatedAt?: string;
   auditTrail?: AuditHistoryRecord[];
-  status?: 'PASSED' | 'FAILED';
+  status?: 'PASSED' | 'FAILED' | 'UNASSESSED';
   riskScore?: number; // Alias for calculatedRiskScore
   criterionWeight?: number;
   isGateRule?: boolean;
@@ -234,8 +238,14 @@ export function calculateAssessmentReadiness(
         calculatedRiskScore: 9,
       };
 
-      const riskScore = resp.likelihood * resp.impact;
-      const status: 'PASSED' | 'FAILED' = (criterion.gateRuleFlag && riskScore >= 15) ? 'FAILED' : 'PASSED';
+      const isAssessed = resp.likelihood > 0 && resp.impact > 0;
+      const riskScore = isAssessed ? resp.likelihood * resp.impact : 0;
+      let status: 'PASSED' | 'FAILED' | 'UNASSESSED' = 'PASSED';
+      if (!isAssessed) {
+        status = 'UNASSESSED';
+      } else if (criterion.gateRuleFlag && riskScore >= 15) {
+        status = 'FAILED';
+      }
 
       return {
         ...resp,
