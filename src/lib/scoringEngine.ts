@@ -75,9 +75,98 @@ export interface CriterionResponse {
   updatedBy?: string;
   updatedAt?: string;
   auditTrail?: AuditHistoryRecord[];
+  status?: 'PASSED' | 'FAILED';
+  riskScore?: number; // Alias for calculatedRiskScore
+  criterionWeight?: number;
+  isGateRule?: boolean;
 }
 
+export interface GateStatus {
+  blocked: boolean;
+  failedCriteria: string[];
+}
 
+export interface AssessmentSummary {
+  scoreDeficit: number; // 100 - overallScore
+  activeGateBlockers: Array<{ domainName: string; criterionId?: string }>;
+  weakDomains: Array<{ name: string; score: number }>;
+  evaluatorVariance: number;
+  varianceThreshold: number;
+}
+
+export interface DRIResult {
+  dri: number;
+  contributingConditions: string[];
+}
+
+/**
+ * Thesis Snippet 4.2: Weighted Domain Calculation
+ * Reusable function calculating domain score using individual criterion weights.
+ */
+export function calculateDomainScore(
+  responses: CriterionResponse[]
+): number {
+  const weightedSum = responses.reduce(
+    (sum, response) =>
+      sum +
+      (response.riskScore ?? response.calculatedRiskScore ?? (response.likelihood * response.impact)) *
+      (response.criterionWeight ?? 1),
+    0
+  );
+  const weightTotal = responses.reduce(
+    (sum, response) => sum + (response.criterionWeight ?? 1),
+    0
+  );
+  return weightTotal === 0 ? 0 : weightedSum / weightTotal;
+}
+
+/**
+ * Thesis Snippet 4.3: Gate Evaluation
+ * Evaluates mandatory gate rules and enforces Gate Rule Blocker Override Principle.
+ */
+export function evaluateGateRules(
+  responses: CriterionResponse[]
+): GateStatus {
+  const failedGates = responses.filter(
+    (response) => response.isGateRule && response.status === 'FAILED'
+  );
+  return {
+    blocked: failedGates.length > 0,
+    failedCriteria: failedGates.map((response) => response.criterionId),
+  };
+}
+
+/**
+ * Thesis Snippet 4.4: Deterministic DRI Processing
+ * Transparent, deterministic calculation of Deployment Risk Index.
+ */
+export function calculateDRI(
+  input: AssessmentSummary
+): DRIResult {
+  const dri = input.scoreDeficit;
+  const conditions: string[] = [];
+
+  if (input.activeGateBlockers.length > 0) {
+    conditions.push(
+      ...input.activeGateBlockers.map(
+        (gate) => `Active gate blocker: ${gate.domainName}`
+      )
+    );
+  }
+
+  input.weakDomains.forEach((domain) => {
+    conditions.push(`Weak domain: ${domain.name}`);
+  });
+
+  if (input.evaluatorVariance > input.varianceThreshold) {
+    conditions.push('Significant evaluator disagreement detected');
+  }
+
+  return {
+    dri: Math.round(dri),
+    contributingConditions: conditions,
+  };
+}
 
 export interface DomainScoreResult {
   domainId: string;
@@ -136,7 +225,8 @@ export function calculateAssessmentReadiness(
     let domainHasBlocker = false;
     const domainBlockers: string[] = [];
 
-    domainCriteria.forEach((criterion) => {
+    // Map responses to include weights & gate flags for evaluateGateRules & calculateDomainScore
+    const domainResponses: CriterionResponse[] = domainCriteria.map((criterion) => {
       const resp = responses[criterion.id] || {
         criterionId: criterion.id,
         likelihood: 3,
@@ -144,18 +234,38 @@ export function calculateAssessmentReadiness(
         calculatedRiskScore: 9,
       };
 
-      const riskScore = resp.likelihood * resp.impact; // Range 1 - 25
-      domainRisk += riskScore;
+      const riskScore = resp.likelihood * resp.impact;
+      const status: 'PASSED' | 'FAILED' = (criterion.gateRuleFlag && riskScore >= 15) ? 'FAILED' : 'PASSED';
 
-      // Gate Rule Blocker Check: High Risk (Likelihood * Impact >= 15) or unfulfilled gate
-      if (criterion.gateRuleFlag && riskScore >= 15) {
-        domainHasBlocker = true;
-        hasGlobalGateBlocker = true;
-        const msg = `[Blocker] ${domain.name}: ${criterion.criterionText} (Risk Score: ${riskScore}/25)`;
+      return {
+        ...resp,
+        riskScore,
+        calculatedRiskScore: riskScore,
+        criterionWeight: criterion.weight || 10,
+        isGateRule: criterion.gateRuleFlag,
+        status,
+      };
+    });
+
+    domainResponses.forEach((resp) => {
+      const riskScore = resp.calculatedRiskScore;
+      domainRisk += riskScore;
+    });
+
+    // Invoke evaluateGateRules (Snippet 4.3)
+    const gateEval = evaluateGateRules(domainResponses);
+    if (gateEval.blocked) {
+      domainHasBlocker = true;
+      hasGlobalGateBlocker = true;
+      gateEval.failedCriteria.forEach((critId) => {
+        const crit = domainCriteria.find((c) => c.id === critId);
+        const resp = domainResponses.find((r) => r.criterionId === critId);
+        const score = resp ? resp.calculatedRiskScore : 15;
+        const msg = `[Blocker] ${domain.name}: ${crit ? crit.criterionText : 'Gate Rule Failed'} (Risk Score: ${score}/25)`;
         domainBlockers.push(msg);
         activeBlockers.push(msg);
-      }
-    });
+      });
+    }
 
     const domainReadiness = Math.max(0, Math.round(((maxDomainRisk - domainRisk) / maxDomainRisk) * 100));
 

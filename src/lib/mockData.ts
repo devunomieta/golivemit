@@ -133,22 +133,25 @@ export const INITIAL_RELEASES: ReleaseRecord[] = [
 export const MOCK_PROJECTS_STORE: ProjectRecord[] = [...INITIAL_PROJECTS];
 export const MOCK_RELEASES_STORE: ReleaseRecord[] = [...INITIAL_RELEASES];
 
-// Release r1 (Core Banking API): Has 1 Gate Blocker on c9 -> NO-GO (72%)
+// Release r1 (Core Banking API - Payment Gateway Integration v2.4.0):
+// Synchronized with Thesis Table 5.1 (2 Gate Blockers: c1 at 20/25, c9 at 16/25 -> NO-GO)
 export const RESPONSES_RELEASE_R1: Record<string, CriterionResponse> = {
-  c1: { criterionId: 'c1', likelihood: 1, impact: 5, calculatedRiskScore: 5, comment: 'UAT completed with 100% sign-off from Product Owner.', evidenceUrl: 'https://jira.company.com/uat-signoff-882' },
+  c1: { criterionId: 'c1', likelihood: 4, impact: 5, calculatedRiskScore: 20, comment: 'UAT completed with 100% sign-off from Product Owner.', evidenceUrl: 'https://jira.company.com/uat-signoff-882' },
   c2: { criterionId: 'c2', likelihood: 2, impact: 3, calculatedRiskScore: 6, comment: 'Coverage at 84.5% on SonarQube.', evidenceUrl: 'https://sonar.company.com/build/4910' },
   c3: { criterionId: 'c3', likelihood: 1, impact: 5, calculatedRiskScore: 5, comment: 'Zero Sev-1 defects remaining in candidate release build.', evidenceUrl: 'https://jira.company.com/defects/sev1-zero' },
-  c4: { criterionId: 'c4', likelihood: 2, impact: 3, calculatedRiskScore: 6, comment: 'Automated suite pass rate at 97.2%.', evidenceUrl: 'https://jenkins.company.com/job/regression/102' },
+  c4: { criterionId: 'c4', likelihood: 2, impact: 4, calculatedRiskScore: 8, comment: 'Automated suite pass rate at 97.2%.', evidenceUrl: 'https://jenkins.company.com/job/regression/102' },
   c5: { criterionId: 'c5', likelihood: 1, impact: 5, calculatedRiskScore: 5, comment: 'Veracode SAST scan clear of high/critical vulnerabilities.', evidenceUrl: 'https://security.company.com/scans/771' },
   c6: { criterionId: 'c6', likelihood: 2, impact: 4, calculatedRiskScore: 8, comment: 'JWT access token policy enforced.' },
   c7: { criterionId: 'c7', likelihood: 2, impact: 3, calculatedRiskScore: 6, comment: 'JMeter load test averaged 280ms latency under 5000 users.' },
   c8: { criterionId: 'c8', likelihood: 2, impact: 5, calculatedRiskScore: 10, comment: 'Migration script executed on staging DB with 0 data drift.' },
-  c9: { criterionId: 'c9', likelihood: 4, impact: 5, calculatedRiskScore: 20, comment: 'Rollback script missing automated data restoration steps!', evidenceUrl: 'https://github.com/company/infra/issues/409' },
+  c9: { criterionId: 'c9', likelihood: 4, impact: 4, calculatedRiskScore: 16, comment: 'Rollback script missing automated data restoration steps!', evidenceUrl: 'https://github.com/company/infra/issues/409' },
   c10: { criterionId: 'c10', likelihood: 2, impact: 3, calculatedRiskScore: 6, comment: 'Staging environment matches prod specs.' },
-  c11: { criterionId: 'c11', likelihood: 2, impact: 3, calculatedRiskScore: 6, comment: 'Tier 2 service desk agents briefed.' },
+  c11: { criterionId: 'c11', likelihood: 2, impact: 5, calculatedRiskScore: 10, comment: 'Tier 2 service desk agents briefed.' },
   c12: { criterionId: 'c12', likelihood: 2, impact: 2, calculatedRiskScore: 4, comment: 'User guides distributed to internal staff.' },
   c13: { criterionId: 'c13', likelihood: 2, impact: 4, calculatedRiskScore: 8, comment: 'NDPA 2023 data compliance checklist verified.' },
   c14: { criterionId: 'c14', likelihood: 2, impact: 2, calculatedRiskScore: 4, comment: 'Release notes finalized in Confluence.' },
+  c15: { criterionId: 'c15', likelihood: 3, impact: 3, calculatedRiskScore: 9, comment: 'Data pipeline migration & analytics tracking verification verified.' },
+  c16: { criterionId: 'c16', likelihood: 3, impact: 3, calculatedRiskScore: 9, comment: 'APM telemetry dashboard, error logging & alerting threshold rules configured.' },
 };
 
 // Release r2 (Customer Portal v3.0): High readiness, 0 Gate Blockers -> GO (89%)

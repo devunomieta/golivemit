@@ -16,6 +16,7 @@ import {
   validateEvidenceFile, 
   sanitizeText 
 } from '@/lib/validationUtils';
+import { useDirtyGuard } from '@/lib/useDirtyGuard';
 import { 
   ShieldAlert, 
   Link as LinkIcon, 
@@ -82,6 +83,9 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
   const [localResponses, setLocalResponses] = React.useState<Record<string, CriterionResponse>>(responses);
   const [isDirty, setIsDirty] = React.useState(false);
   const [savedNotice, setSavedNotice] = React.useState(false);
+
+  // Thesis Snippet 4.1: Dirty-State Detection & BeforeUnload Protection
+  useDirtyGuard(localResponses, responses);
 
   // 2-Tier Sorted Domains: Assigned to active persona first (A-Z), then unassigned (A-Z)
   const sortedDomains = React.useMemo(() => {

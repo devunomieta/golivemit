@@ -1,9 +1,10 @@
 /**
- * AI Risk Prediction & Mitigation Recommendation Engine
- * Evaluates Deployment Risk Index (DRI) and generates automated remediation strategies
+ * Deployment Risk Index (DRI) & Predefined Mitigation Recommendation Engine
+ * Evaluates Deployment Risk Index (DRI) deterministically (Thesis Section 4.10)
+ * and maps condition-based mitigations without opaque machine learning or generative AI.
  */
 
-import { OverallAssessmentResult, ReadinessCriterion, CriterionResponse } from './scoringEngine';
+import { OverallAssessmentResult, ReadinessCriterion, CriterionResponse, calculateDRI } from './scoringEngine';
 
 export interface AIRiskAnalysis {
   deploymentRiskIndex: number; // 0 - 100%
@@ -24,7 +25,8 @@ export interface AIRiskAnalysis {
 }
 
 /**
- * Calculates Deployment Risk Index (DRI) and recommends automated mitigations
+ * Calculates Deployment Risk Index (DRI) deterministically (Thesis Snippet 4.4)
+ * and associates condition-based mitigation statements.
  */
 export function calculateAIRiskAnalysis(
   assessmentResult: OverallAssessmentResult,
@@ -33,30 +35,38 @@ export function calculateAIRiskAnalysis(
 ): AIRiskAnalysis {
   const { overallScore, hasGateBlocker, activeBlockers, domainBreakdown } = assessmentResult;
 
-  // 1. Calculate Base Risk Component (Inverse of Readiness Score)
-  const scoreRisk = Math.max(0, 100 - overallScore);
+  // 1. Calculate Base Risk Component (Score Deficit = 100 - overallScore)
+  const scoreDeficit = Math.max(0, 100 - overallScore);
 
-  // 2. Calculate Blocker Penalty
-  const blockerPenalty = activeBlockers.length * 25;
+  // 2. Weak domains identification (< 80% readiness)
+  const weakDomains = domainBreakdown
+    .filter((d) => d.readinessPercentage < 80)
+    .map((d) => ({ name: d.domainName, score: d.readinessPercentage }));
 
-  // 3. Calculate Evaluator Variance / High-Risk Criteria Penalty
+  // 3. Evaluator rating variance across criteria
   let highRiskCount = 0;
-  let variancePenalty = 0;
-
+  let totalVariance = 0;
   criteria.forEach((c) => {
     const resp = responses[c.id];
     if (resp) {
-      const riskScore = resp.likelihood * resp.impact;
-      if (riskScore > 12) {
+      const risk = resp.calculatedRiskScore ?? (resp.likelihood * resp.impact);
+      if (risk > 12) {
         highRiskCount++;
-        variancePenalty += (riskScore - 12) * 2;
+        totalVariance += (risk - 12);
       }
     }
   });
 
-  // Calculate composite Deployment Risk Index (DRI) capped at 100%
-  const rawDRI = (scoreRisk * 0.45) + (blockerPenalty * 0.35) + (variancePenalty * 0.20);
-  const deploymentRiskIndex = Math.min(100, Math.round(rawDRI));
+  // Invoke Thesis Snippet 4.4 calculateDRI
+  const driResult = calculateDRI({
+    scoreDeficit,
+    activeGateBlockers: activeBlockers.map((b) => ({ domainName: b })),
+    weakDomains,
+    evaluatorVariance: totalVariance,
+    varianceThreshold: 15,
+  });
+
+  const deploymentRiskIndex = Math.min(100, Math.max(0, driResult.dri));
 
   // Determine Risk Tier
   const riskTier: AIRiskAnalysis['riskTier'] = 

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CryptographicBlock } from '@/lib/cryptoLedger';
+import { CryptographicBlock, generateProofCertificate } from '@/lib/cryptoLedger';
 import { ShieldCheck, Lock, CheckCircle2, AlertOctagon, Download, UploadCloud, X, FileText } from 'lucide-react';
 
 interface CryptographicVerifierModalProps {
@@ -24,17 +24,17 @@ export const CryptographicVerifierModal: React.FC<CryptographicVerifierModalProp
   }>({ status: 'IDLE', message: '' });
 
   const handleExportJSONProof = () => {
-    const proofPayload = {
-      exportTimestamp: new Date().toISOString(),
-      governanceBoard: 'Enterprise Release Governance Board',
-      chainIntegrityStatus: isChainValid ? '100% UNTAMPERED' : 'TAMPER DETECTED',
-      ledgerBlocks: blocks,
-    };
+    // Thesis Section 4.16: Proof Certificate export
+    const proofCertificate = generateProofCertificate(
+      blocks,
+      'Payment Gateway Integration v2.4.0',
+      isChainValid
+    );
 
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(proofPayload, null, 2));
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(proofCertificate, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `golive-cryptographic-proof-${Date.now()}.json`);
+    downloadAnchor.setAttribute('download', `golive-proof-certificate-${proofCertificate.certificateId}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
