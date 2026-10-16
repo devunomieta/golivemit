@@ -410,13 +410,22 @@ export async function submitApprovalVote(
 
     if (error) return false;
 
-    // Log governance vote
+    // Log governance vote with mandatory rationale and evidence proof
     await supabase.from('audit_logs').insert([
       {
         user_id: userId,
         action: 'CAST_GOVERNANCE_VOTE',
         affected_table: 'approvals',
-        details: JSON.stringify({ decision, conditionsText }),
+        details: JSON.stringify({
+          decision,
+          comments: comments || 'N/A',
+          evidenceUrl: evidenceUrl || null,
+          evidenceFileName: evidenceFileName || null,
+          conditionsText: conditionsText || null,
+          conditionsOwner: conditionsOwner || null,
+          signatureStamp,
+          digitalSignatureName,
+        }),
       },
     ]);
 

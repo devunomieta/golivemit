@@ -121,9 +121,16 @@ export const ApprovalWorkflow: React.FC<ApprovalWorkflowProps> = ({
       return;
     }
 
-    // Validation for NO_GO decisions
-    if (decision === 'NO_GO' && !comments.trim()) {
-      setFormError('Please provide a decision rationale/comment explaining the NO-GO rejection.');
+    // Mandatory Reasoning Comments for ALL decisions (GO, CONDITIONAL_GO, NO_GO)
+    if (!comments.trim()) {
+      setFormError(`Decision rationale comment is mandatory. Please state the justification for casting a "${decision}" vote.`);
+      return;
+    }
+
+    // Mandatory Supporting Evidence for ALL decisions (GO, CONDITIONAL_GO, NO_GO)
+    const hasEvidenceProof = !!(evidenceUrl.trim() || evidenceFile);
+    if (!hasEvidenceProof) {
+      setFormError(`Supporting evidence proof is mandatory for governance decisions. Please provide an Evidence URL link or attach a verification document.`);
       return;
     }
 
@@ -316,18 +323,19 @@ export const ApprovalWorkflow: React.FC<ApprovalWorkflowProps> = ({
           <div className="space-y-1.5 pt-1">
             <label className="text-xs text-gray-300 flex items-center justify-between">
               <span>Decision Comments & Board Rationale:</span>
-              <span className={`text-[10px] font-semibold font-mono ${decision === 'NO_GO' ? 'text-rose-400' : 'text-slate-400'}`}>
-                {decision === 'NO_GO' ? 'Required for NO-GO' : 'Optional'}
+              <span className="text-[10px] font-semibold font-mono text-cyan-400">
+                Mandatory
               </span>
             </label>
             <textarea
+              required
               rows={2}
               placeholder={
                 decision === 'GO' 
-                  ? "e.g., All 480 automated regression tests passed with zero high-severity open defects."
+                  ? "State reasons for release clearance (e.g., All critical security, performance and rollback checks passed and verified)."
                   : decision === 'CONDITIONAL_GO'
-                  ? "e.g., Approved subject to mandatory dry-run execution log provided prior to deployment window."
-                  : "e.g., Rejecting release due to unresolved high severity security vulnerability in OAuth service."
+                  ? "State reasons and stipulations (e.g., Clearance approved subject to dry-run validation logs received before cutover)."
+                  : "State detailed reasons for postponement or rejection (e.g., Release blocked due to failed automated rollback script)."
               }
               value={comments}
               onChange={(e) => setComments(e.target.value)}
@@ -335,27 +343,38 @@ export const ApprovalWorkflow: React.FC<ApprovalWorkflowProps> = ({
             />
           </div>
 
-          {/* Evidence Verification (URL & File Upload) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3.5 rounded-xl bg-slate-950/60 border border-white/5">
-            <div className="space-y-1">
-              <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">
-                <Link className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Evidence URL Link (Optional):</span>
-              </label>
-              <input
-                type="url"
-                placeholder="https://jira.company.com/browse/REL-2026"
-                value={evidenceUrl}
-                onChange={(e) => setEvidenceUrl(e.target.value)}
-                className="w-full p-2 rounded-lg bg-gray-900 text-xs text-white border border-white/10 focus:border-cyan-500/50 focus:outline-none placeholder:text-slate-600"
-              />
+          {/* Evidence Verification (URL & File Upload) - Mandatory */}
+          <div className="p-3.5 rounded-xl bg-slate-950/60 border border-white/10 space-y-3">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                <span>Supporting Governance Evidence:</span>
+              </span>
+              <span className="text-[10px] text-cyan-400 font-mono">
+                Mandatory (URL or File)
+              </span>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">
-                <Paperclip className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Evidence Document / File (Optional):</span>
-              </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
+                  <Link className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Evidence URL Link:</span>
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://jira.company.com/browse/REL-2026"
+                  value={evidenceUrl}
+                  onChange={(e) => setEvidenceUrl(e.target.value)}
+                  className="w-full p-2 rounded-lg bg-gray-900 text-xs text-white border border-white/10 focus:border-cyan-500/50 focus:outline-none placeholder:text-slate-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
+                  <Paperclip className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Evidence Document / File:</span>
+                </label>
               
               {evidenceFile ? (
                 <div className="flex items-center justify-between p-2 rounded-lg bg-cyan-950/60 border border-cyan-500/40 text-xs text-cyan-300 font-mono">
@@ -378,6 +397,7 @@ export const ApprovalWorkflow: React.FC<ApprovalWorkflowProps> = ({
                   <input type="file" onChange={handleFileChange} className="hidden" accept=".pdf,.doc,.docx,.txt,.log,.png,.jpg,.jpeg" />
                 </label>
               )}
+              </div>
             </div>
           </div>
 
